@@ -482,6 +482,8 @@ td:first-child, th:first-child { white-space: nowrap; }
 }
 .status-active::before { background: currentColor; }
 .status-planned { color: var(--text-secondary); font-weight: 400; }
+/* Shape, not just color: done is a filled square. */
+.status-done::before { background: currentColor; border-radius: 2px; }
 
 /* Footer */
 .site-footer {
