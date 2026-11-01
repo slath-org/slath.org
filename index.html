@@ -52,14 +52,14 @@
         <p class="lede">Slath is a secure, lightweight forge you run yourself. A small installation needs only Slath, PostgreSQL, Git, and OpenSSH. It's free software under the AGPL.</p>
         <div class="notice" role="note">
           <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#info"/></svg>
-          <p><strong>Slath 0.1 is out.</strong> It's the first release, for trying Slath out on a small team: accounts, organizations, repositories, Git and jj over HTTPS and SSH, a code browser, an API, and backups. Before 1.0, minor releases may change configuration, storage, and interfaces.</p>
+          <p><strong>Slath 0.1.1 is out.</strong> It's a security update to the first release: the SSH login now runs as its own system user and can't read the server's data. Running 0.1.0? See the <a href="https://github.com/slath-org/slath/blob/v0.1.1/docs/admin/upgrading.md">upgrade guide</a>. Slath 0.1 is for trying Slath out on a small team: accounts, organizations, repositories, Git and jj over HTTPS and SSH, a code browser, an API, and backups. Before 1.0, minor releases may change configuration, storage, and interfaces.</p>
         </div>
         <div class="actions">
-          <a class="button button-primary" href="https://github.com/slath-org/slath/releases/tag/v0.1.0">
-            Get Slath 0.1
+          <a class="button button-primary" href="https://github.com/slath-org/slath/releases/tag/v0.1.1">
+            Get Slath 0.1.1
             <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#arrow-right"/></svg>
           </a>
-          <a class="button" href="https://github.com/slath-org/slath/blob/v0.1.0/docs/admin/install.md">Install guide</a>
+          <a class="button" href="https://github.com/slath-org/slath/blob/v0.1.1/docs/admin/install.md">Install guide</a>
           <a class="button" href="#roadmap">See the roadmap</a>
         </div>
       </div>
@@ -82,7 +82,7 @@
             <li>
               <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#shield-check"/></svg>
               <strong>Security boundaries you can check</strong>
-              <p>Git runs only through a hardened process runner with a scrubbed environment. SSH helpers never see database credentials. Hooks that can't reach the server reject the push instead of letting it through. CI jobs run on separate runner hosts, never on the forge.</p>
+              <p>Git runs only through a hardened process runner with a scrubbed environment. SSH logins run as a separate system user that can only reach the server's socket, never the database credentials, keys, or repositories. Hooks that can't reach the server reject the push instead of letting it through. CI jobs run on separate runner hosts, never on the forge.</p>
             </li>
             <li>
               <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#network"/></svg>
@@ -101,7 +101,7 @@
 <pre><code>Match User git
     AuthorizedKeysFile none
     AuthorizedKeysCommand /usr/bin/slath ssh-keys --socket /run/slath/slath.sock %f
-    AuthorizedKeysCommandUser slath
+    AuthorizedKeysCommandUser git
     PasswordAuthentication no
     PermitTTY no
     AllowTcpForwarding no
@@ -110,8 +110,8 @@
     AcceptEnv GIT_PROTOCOL</code></pre>
             </figure>
             <figure class="code">
-              <figcaption>Try it with Docker Compose (<a href="https://github.com/slath-org/slath/blob/v0.1.0/docs/admin/install.md">install guide</a>)</figcaption>
-<pre><code>git clone --branch v0.1.0 https://github.com/slath-org/slath.git
+              <figcaption>Try it with Docker Compose (<a href="https://github.com/slath-org/slath/blob/v0.1.1/docs/admin/install.md">install guide</a>)</figcaption>
+<pre><code>git clone --branch v0.1.1 https://github.com/slath-org/slath.git
 cd slath/deploy/compose
 cp .env.example .env   <span class="muted"># set SLATH_DB_PASSWORD</span>
 docker compose build &amp;&amp; docker compose up -d
@@ -211,7 +211,7 @@ Retry webhook delivery with backoff</code></pre>
             </thead>
             <tbody>
               <tr><td class="version">foundation</td><td>Workspace, hardened Git runner, job queue, Git over HTTPS and SSH, jj compatibility tests</td><td><span class="status status-done">Done</span></td></tr>
-              <tr><td class="version"><a href="https://github.com/slath-org/slath/releases/tag/v0.1.0">0.1</a></td><td>Self-hosted Git: accounts, tokens, SSH keys, organizations, repositories, code browser, API, backup and restore</td><td><span class="status status-done">Released</span></td></tr>
+              <tr><td class="version"><a href="https://github.com/slath-org/slath/releases/tag/v0.1.1">0.1</a></td><td>Self-hosted Git: accounts, tokens, SSH keys, organizations, repositories, code browser, API, backup and restore</td><td><span class="status status-done">Released</span></td></tr>
               <tr><td class="version">0.2</td><td>Team alpha: OIDC, TOTP, passkeys, teams, branch protection, issues, notifications, search, import, robust upgrades</td><td><span class="status status-active">Next</span></td></tr>
               <tr><td class="version">0.3</td><td>Merge requests and forks: revisions, interdiffs, batched reviews, suggestions, statuses, webhooks, bot accounts</td><td><span class="status status-planned">Planned</span></td></tr>
               <tr><td class="version">0.4</td><td>Stacks: per-change review, stack view, partial landing, landing by push, conflicts</td><td><span class="status status-planned">Planned</span></td></tr>
