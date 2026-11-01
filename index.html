@@ -1,0 +1,241 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Slath: a self-hosted code forge for Git and Jujutsu</title>
+  <meta name="description" content="Slath is a secure, lightweight, self-hosted code forge where Git and Jujutsu users collaborate on equal terms. Free software under the AGPL.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f6f3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#171b19" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/source-sans-3-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/theme.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./" aria-label="Slath home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.5" d="M1.5 6H3.75M8.25 6H15.75M20.25 6H22.5M1.5 12H9.75M14.25 12H22.5M1.5 18H3.75M8.25 18H15.75M20.25 18H22.5M6 1.5V9.75M6 14.25V22.5M12 1.5V3.75M12 8.25V15.75M12 20.25V22.5M18 1.5V9.75M18 14.25V22.5"/></svg>
+        Slath
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="#self-hosting">Self-hosting</a></li>
+          <li><a href="#git-and-jj">Git and jj</a></li>
+          <li><a href="#federation">Federation</a></li>
+          <li><a href="#roadmap">Roadmap</a></li>
+          <li><a href="https://github.com/slath-org/slath">Source</a></li>
+        </ul>
+      </nav>
+      <fieldset class="theme-switch" id="theme-switch" hidden>
+        <legend class="visually-hidden">Color theme</legend>
+        <input type="radio" name="theme" id="theme-system" value="system">
+        <label for="theme-system"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#monitor"/></svg><span class="label-text">System</span></label>
+        <input type="radio" name="theme" id="theme-light" value="light">
+        <label for="theme-light"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#sun"/></svg><span class="label-text">Light</span></label>
+        <input type="radio" name="theme" id="theme-dark" value="dark">
+        <label for="theme-dark"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#moon"/></svg><span class="label-text">Dark</span></label>
+      </fieldset>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap">
+        <h1 id="hero-title">A self-hosted code forge where Git and Jujutsu users work on equal terms</h1>
+        <p class="lede">Slath is a secure, lightweight forge you run yourself. A small installation needs only Slath, PostgreSQL, Git, and OpenSSH. It's free software under the AGPL.</p>
+        <div class="notice" role="note">
+          <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#info"/></svg>
+          <p><strong>Early development.</strong> Slath isn't usable yet. Configuration, storage layout, and interfaces will change without notice. This page describes what works today and what's planned.</p>
+        </div>
+        <div class="actions">
+          <a class="button button-primary" href="https://github.com/slath-org/slath">
+            Follow development on GitHub
+            <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#arrow-right"/></svg>
+          </a>
+          <a class="button" href="#roadmap">See the roadmap</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="self-hosting" aria-labelledby="self-hosting-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#server"/></svg>For self-hosters</p>
+          <h2 id="self-hosting-title">Small enough to run on one machine</h2>
+          <p>Slath is a single Rust binary. It doesn't need Kubernetes, Redis, a hosted account, or anything on the internet once it's installed.</p>
+        </div>
+        <div class="split">
+          <ul class="points">
+            <li>
+              <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#layers"/></svg>
+              <strong>Four parts, all of them familiar</strong>
+              <p>Slath, PostgreSQL, system Git, and the OpenSSH server you already run. Background jobs use a queue in PostgreSQL. Repositories and uploads live on the local filesystem.</p>
+            </li>
+            <li>
+              <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#shield-check"/></svg>
+              <strong>Security boundaries you can check</strong>
+              <p>Git runs only through a hardened process runner with a scrubbed environment. SSH helpers never see database credentials. Hooks that can't reach the server reject the push instead of letting it through. CI jobs run on separate runner hosts, never on the forge.</p>
+            </li>
+            <li>
+              <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#network"/></svg>
+              <strong>Self-contained and air-gap friendly</strong>
+              <p>Every font, icon, and script is served by your instance. No CDNs, remote fonts, analytics, or avatar services.</p>
+            </li>
+            <li>
+              <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#terminal"/></svg>
+              <strong>Upgrades in one command (planned)</strong>
+              <p>Upgrades from any earlier release are planned as a single command, with preflight checks, an automatic backup, and a tested way back.</p>
+            </li>
+          </ul>
+          <div>
+            <figure class="code">
+              <figcaption>SSH access goes through your sshd: <code>/etc/ssh/sshd_config.d/slath.conf</code></figcaption>
+<pre><code>Match User git
+    AuthorizedKeysFile none
+    AuthorizedKeysCommand /usr/bin/slath ssh-keys --socket /run/slath/slath.sock %f
+    AuthorizedKeysCommandUser slath
+    PasswordAuthentication no
+    PermitTTY no
+    AllowTcpForwarding no
+    AllowAgentForwarding no
+    X11Forwarding no
+    AcceptEnv GIT_PROTOCOL</code></pre>
+            </figure>
+            <figure class="code">
+              <figcaption>What a small installation needs</figcaption>
+<pre><code><span class="muted"># the forge</span>
+slath serve
+<span class="muted"># and three things you probably already have</span>
+postgresql   <span class="muted"># 15 or newer</span>
+git
+openssh</code></pre>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="git-and-jj" aria-labelledby="git-and-jj-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#git-branch"/></svg>For Git and Jujutsu users</p>
+          <h2 id="git-and-jj-title">Review changes, not just branches</h2>
+          <p>Plain Git clients clone, fetch, and push over HTTPS and SSH with the standard protocols. <a href="https://docs.jj-vcs.dev/">Jujutsu</a> is first-class too: Slath follows a change across rewrites, so reviews survive rebases and amends.</p>
+        </div>
+        <div class="split">
+          <div class="prose">
+            <p>A change keeps its identity however often you rewrite it. Slath reads that identity from either of two places:</p>
+            <ul>
+              <li>the <code>change-id</code> header that jj writes into Git commits, or</li>
+              <li>a <code>Change-Id:</code> trailer in the commit message, for Git users and existing Gerrit-style tooling.</li>
+            </ul>
+            <p>On top of that, merge requests will show each revision of a change, interdiffs between revisions, and <strong>stacks</strong> of dependent changes that can be reviewed one by one and landed partially, from the web or by pushing.</p>
+            <p>Merge requests and stacks are planned. Today Slath serves Git over smart HTTP (protocol v0 and v2) and over SSH, and its test suite runs <code>jj git clone</code> and <code>jj git push</code> over both for every supported jj version.</p>
+          </div>
+          <div>
+            <figure class="code">
+              <figcaption>The same change, written by jj</figcaption>
+<pre><code><span class="muted">$</span> git cat-file commit HEAD
+tree 9c1d…
+parent 4e07…
+author Ada &lt;ada@example.org&gt; 1793520000 +0100
+committer Ada &lt;ada@example.org&gt; 1793520000 +0100
+<mark>change-id wnzqrpvsoxtlmuqyvvklwkqrnzosklpt</mark>
+
+Retry webhook delivery with backoff</code></pre>
+            </figure>
+            <figure class="code">
+              <figcaption>…and by Git with a trailer</figcaption>
+<pre><code>Retry webhook delivery with backoff
+
+<mark>Change-Id: I8f3c2a7d5e9b14c06a2f8e1d3b7c9a5e4f2d1c0b</mark></code></pre>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="federation" aria-labelledby="federation-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#network"/></svg>Federation</p>
+          <h2 id="federation-title">ForgeFed: after 1.0, on solid ground</h2>
+          <p>Slath 1.0 won't federate. We'd rather say that plainly than promise a half-working protocol.</p>
+        </div>
+        <div class="split">
+          <div class="prose">
+            <p><a href="https://forgefed.org/">ForgeFed</a> lets issues, merge requests, and follows cross instance boundaries. Experiments with it are on the roadmap for the 2.x series. Interoperability with the AT Protocol and <a href="https://tangled.org/">Tangled</a> is a research topic, not a commitment.</p>
+            <p>Until then, Slath builds what federation depends on:</p>
+            <ul>
+              <li><strong>Stable change identity</strong> that doesn't break when a commit is rewritten, so a change can be referred to from elsewhere.</li>
+              <li><strong>A complete REST API and webhooks</strong>, so other systems can follow what happens on an instance.</li>
+              <li><strong>Full data export</strong>, so nothing you put into an instance is locked in.</li>
+            </ul>
+          </div>
+          <div class="prose">
+            <p>If you work on ForgeFed, run a federated forge, or have opinions on how jj change identity should travel between instances, we'd like to hear from you early, while the data model is still open.</p>
+            <p><a class="button" href="https://github.com/slath-org/slath/issues">Start a conversation in the issue tracker <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#external-link"/></svg></a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="roadmap" aria-labelledby="roadmap-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="roadmap-title">Roadmap</h2>
+          <p>Releases have no dates. Each one ships when its acceptance tests pass, and those tests cover security, accessibility, and upgrades alongside features.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <caption>Planned releases up to 1.0</caption>
+            <thead>
+              <tr><th scope="col">Version</th><th scope="col">Theme</th><th scope="col">Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="version">foundation</td><td>Workspace, hardened Git runner, job queue, Git over HTTPS and SSH, jj compatibility tests</td><td><span class="status status-active">In progress</span></td></tr>
+              <tr><td class="version">0.1</td><td>Self-hosted Git: accounts, tokens, SSH keys, organizations, repositories, code browser, API, backup and restore</td><td><span class="status status-planned">Planned</span></td></tr>
+              <tr><td class="version">0.2</td><td>Team alpha: OIDC, TOTP, passkeys, teams, branch protection, issues, notifications, search, import, robust upgrades</td><td><span class="status status-planned">Planned</span></td></tr>
+              <tr><td class="version">0.3</td><td>Merge requests and forks: revisions, interdiffs, batched reviews, suggestions, statuses, webhooks, bot accounts</td><td><span class="status status-planned">Planned</span></td></tr>
+              <tr><td class="version">0.4</td><td>Stacks: per-change review, stack view, partial landing, landing by push, conflicts</td><td><span class="status status-planned">Planned</span></td></tr>
+              <tr><td class="version">0.5</td><td>CI with GitHub Actions-style workflows on separate runners, with approval for external contributions</td><td><span class="status status-planned">Planned</span></td></tr>
+              <tr><td class="version">0.9</td><td>Release candidate: data export, performance, external security review, signed releases</td><td><span class="status status-planned">Planned</span></td></tr>
+              <tr><td class="version">1.0</td><td>Stable interfaces</td><td><span class="status status-planned">Planned</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="prose after-table">Not in 1.0: federation, a package registry, Git LFS, wikis, code search, and Kubernetes-native high availability. Some of these are planned for later releases.</p>
+      </div>
+    </section>
+
+    <section class="section" id="contribute" aria-labelledby="contribute-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#scale"/></svg>Free software</p>
+          <h2 id="contribute-title">Built in the open</h2>
+          <p>The server is licensed under the GNU AGPL v3.0 or later. Hosting repositories on Slath doesn't affect their licenses. Contributions are welcome with a DCO sign-off.</p>
+        </div>
+        <div class="actions">
+          <a class="button button-primary" href="https://github.com/slath-org/slath">Source code <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#external-link"/></svg></a>
+          <a class="button" href="https://github.com/slath-org/slath/blob/main/CHANGELOG.md">Changelog</a>
+          <a class="button" href="https://github.com/slath-org/slath/blob/main/docs/dev/setup.md">Development setup</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>© 2026 Erich Seifert. Site content licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Fonts: Source Sans 3 and JetBrains Mono (SIL OFL 1.1). Icons: Lucide (ISC).</p>
+      <p>This site uses no cookies, analytics, or third-party resources. Your theme choice is stored only in your browser.</p>
+    </div>
+  </footer>
+</body>
+</html>
