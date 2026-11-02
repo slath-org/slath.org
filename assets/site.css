@@ -215,7 +215,15 @@ code { font-size: 0.93em; }
   font-weight: 600;
   text-decoration: none;
 }
-.brand svg { width: 24px; height: 24px; }
+.brand .logo { width: 24px; height: 24px; }
+/* One logo per theme: the chosen theme wins, otherwise the system's. */
+.logo-dark,
+:root[data-theme="dark"] .logo-light { display: none; }
+:root[data-theme="dark"] .logo-dark { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .logo-light { display: none; }
+  :root:not([data-theme="light"]) .logo-dark { display: block; }
+}
 .site-nav { margin-right: auto; }
 .site-nav ul {
   display: flex;

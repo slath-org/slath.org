@@ -18,9 +18,26 @@
     }
   }
 
+  // The favicon of the chosen theme, or the system's when none is chosen.
+  function favicon(choice) {
+    var links = document.querySelectorAll('link[rel="icon"][data-scheme]');
+    for (var i = 0; i < links.length; i++) {
+      var scheme = links[i].getAttribute("data-scheme");
+      var media = choice === "system"
+        ? "(prefers-color-scheme: " + scheme + ")"
+        : choice === scheme ? "all" : "not all";
+      if (links[i].media === media) continue;
+      // Browsers pick up a changed icon reliably only from a new element.
+      var fresh = links[i].cloneNode(false);
+      fresh.media = media;
+      links[i].parentNode.replaceChild(fresh, links[i]);
+    }
+  }
+
   function apply(choice) {
     if (choice === "system") root.removeAttribute("data-theme");
     else root.setAttribute("data-theme", choice);
+    favicon(choice);
   }
 
   function store(choice) {
