@@ -161,14 +161,14 @@
 cd compose/agent-sandbox
 docker compose up -d
 docker compose logs seed   # wait for "Slath agent sandbox"</code></pre>
-                    <button class="button copy" type="button" data-copy="cmd-sandbox-start" hidden><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span class="label-text">Copy</span></button>
+                    <button class="icon-button copy" type="button" data-copy="cmd-sandbox-start" hidden><svg class="icon icon-copy" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><svg class="icon icon-copied" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span class="tip">Copy commands</span></button>
                   </div>
                 </li>
                 <li>
                   <p>Open <a href="http://127.0.0.1:3080">127.0.0.1:3080</a> and sign in as <code>ada</code>, with the password from this file:</p>
                   <div class="command">
                     <pre tabindex="0" id="cmd-sandbox-password"><code>cat secrets/ada-password</code></pre>
-                    <button class="button copy" type="button" data-copy="cmd-sandbox-password" hidden><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span class="label-text">Copy</span></button>
+                    <button class="icon-button copy" type="button" data-copy="cmd-sandbox-password" hidden><svg class="icon icon-copy" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><svg class="icon icon-copied" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span class="tip">Copy commands</span></button>
                   </div>
                 </li>
                 <li>
@@ -182,14 +182,14 @@ git push origin HEAD:main
 git switch -c say-hello
 echo "Hello." &gt;&gt; README.md &amp;&amp; git commit -am "Say hello"
 git push origin say-hello</code></pre>
-                    <button class="button copy" type="button" data-copy="cmd-sandbox-push" hidden><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span class="label-text">Copy</span></button>
+                    <button class="icon-button copy" type="button" data-copy="cmd-sandbox-push" hidden><svg class="icon icon-copy" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><svg class="icon icon-copied" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span class="tip">Copy commands</span></button>
                   </div>
                 </li>
                 <li>
                   <p>To start over, remove the sandbox and its data from the <code>agent-sandbox</code> folder:</p>
                   <div class="command">
                     <pre tabindex="0" id="cmd-sandbox-down"><code>docker compose down -v &amp;&amp; rm -f secrets/*</code></pre>
-                    <button class="button copy" type="button" data-copy="cmd-sandbox-down" hidden><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span class="label-text">Copy</span></button>
+                    <button class="icon-button copy" type="button" data-copy="cmd-sandbox-down" hidden><svg class="icon icon-copy" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><svg class="icon icon-copied" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span class="tip">Copy commands</span></button>
                   </div>
                 </li>
               </ol>
@@ -207,7 +207,7 @@ git push origin say-hello</code></pre>
                     <pre tabindex="0" id="cmd-compose-get"><code>curl -fsSL https://github.com/slath-org/slath/releases/download/v0.3.0/slath-compose-0.3.0.tar.gz | tar -xz
 cd compose
 printf 'SLATH_DB_PASSWORD=%s\nSLATH_PUBLIC_URL=http://localhost:3000\n' "$(openssl rand -hex 24)" &gt; .env</code></pre>
-                    <button class="button copy" type="button" data-copy="cmd-compose-get" hidden><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span class="label-text">Copy</span></button>
+                    <button class="icon-button copy" type="button" data-copy="cmd-compose-get" hidden><svg class="icon icon-copy" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><svg class="icon icon-copied" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span class="tip">Copy commands</span></button>
                   </div>
                   <p class="muted">For a server, set <code>SLATH_PUBLIC_URL</code> to the address people use. <code>.env.example</code> lists the other settings.</p>
                 </li>
@@ -217,7 +217,7 @@ printf 'SLATH_DB_PASSWORD=%s\nSLATH_PUBLIC_URL=http://localhost:3000\n' "$(opens
                     <pre tabindex="0" id="cmd-compose-up"><code>docker compose up -d
 docker compose run --rm slath admin create-user --admin \
     --username ada --email ada@example.org</code></pre>
-                    <button class="button copy" type="button" data-copy="cmd-compose-up" hidden><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span class="label-text">Copy</span></button>
+                    <button class="icon-button copy" type="button" data-copy="cmd-compose-up" hidden><svg class="icon icon-copy" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><svg class="icon icon-copied" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span class="tip">Copy commands</span></button>
                   </div>
                 </li>
                 <li>
@@ -227,7 +227,7 @@ docker compose run --rm slath admin create-user --admin \
                   <p>Copy the master key somewhere safe, apart from your backups:</p>
                   <div class="command">
                     <pre tabindex="0" id="cmd-compose-key"><code>docker compose cp slath:/var/lib/slath/master.key ./master.key</code></pre>
-                    <button class="button copy" type="button" data-copy="cmd-compose-key" hidden><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span class="label-text">Copy</span></button>
+                    <button class="icon-button copy" type="button" data-copy="cmd-compose-key" hidden><svg class="icon icon-copy" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><svg class="icon icon-copied" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span class="tip">Copy commands</span></button>
                   </div>
                 </li>
               </ol>
@@ -248,7 +248,7 @@ gh attestation verify "slath-$v-x86_64-linux" --repo slath-org/slath \
     --signer-workflow slath-org/slath/.github/workflows/release.yml \
     --source-ref "refs/tags/v$v"
 sudo install -m 0755 "slath-$v-x86_64-linux" /usr/local/bin/slath</code></pre>
-                    <button class="button copy" type="button" data-copy="cmd-server-get" hidden><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span class="label-text">Copy</span></button>
+                    <button class="icon-button copy" type="button" data-copy="cmd-server-get" hidden><svg class="icon icon-copy" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><svg class="icon icon-copied" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span class="tip">Copy commands</span></button>
                   </div>
                 </li>
                 <li>
@@ -257,7 +257,7 @@ sudo install -m 0755 "slath-$v-x86_64-linux" /usr/local/bin/slath</code></pre>
                     <pre tabindex="0" id="cmd-server-setup"><code>sudo slath setup --check --public-url https://git.example.org
 sudo slath setup --public-url https://git.example.org \
     --admin-username ada --admin-email ada@example.org</code></pre>
-                    <button class="button copy" type="button" data-copy="cmd-server-setup" hidden><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span class="label-text">Copy</span></button>
+                    <button class="icon-button copy" type="button" data-copy="cmd-server-setup" hidden><svg class="icon icon-copy" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><svg class="icon icon-copied" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span class="tip">Copy commands</span></button>
                   </div>
                 </li>
                 <li>

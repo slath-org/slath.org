@@ -436,7 +436,8 @@ code { font-size: 0.875em; }
   cursor: pointer;
   transition: background-color var(--motion-fast), color var(--motion-fast);
 }
-.theme-switch[hidden] { display: none; }
+.theme-switch[hidden],
+.icon-button[hidden] { display: none; }
 .theme-switch:hover,
 .icon-button:hover { background: var(--surface-subtle); color: var(--text); }
 .theme-switch .icon { display: none; }
@@ -807,11 +808,12 @@ main > section + section { border-top: var(--border-width) solid var(--border); 
   line-height: var(--leading-code);
   tab-size: 4;
 }
-.command .copy {
-  margin: var(--space-1);
-  min-height: 2rem;
-  padding-inline: var(--space-2);
-}
+.command .copy { margin: var(--space-1); }
+.command .copy:hover { background: var(--border); }
+.copy .icon-copied,
+.copy.copied .icon-copy { display: none; }
+.copy.copied .icon-copied { display: block; color: var(--success); }
+.copy.copied .tip { clip-path: none; }
 .muted { color: var(--text-secondary); }
 
 /* Output and examples (nothing to copy) */

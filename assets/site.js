@@ -61,13 +61,15 @@
       var button = ev.currentTarget;
       var source = document.getElementById(button.getAttribute("data-copy"));
       if (!source) return;
-      var label = button.querySelector(".label-text");
+      var tip = button.querySelector(".tip");
       navigator.clipboard.writeText(source.textContent.trim()).then(
         function () {
-          if (label) label.textContent = "Copied";
+          button.classList.add("copied");
+          if (tip) tip.textContent = "Copied";
           if (status) status.textContent = "Commands copied.";
           setTimeout(function () {
-            if (label) label.textContent = "Copy";
+            button.classList.remove("copied");
+            if (tip) tip.textContent = "Copy commands";
             if (status) status.textContent = "";
           }, 2000);
         },
