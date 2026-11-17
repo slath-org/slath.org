@@ -35,15 +35,10 @@
           <li><a href="https://github.com/slath-org/slath">Source</a></li>
         </ul>
       </nav>
-      <fieldset class="theme-switch" id="theme-switch" hidden>
-        <legend class="visually-hidden">Color theme</legend>
-        <input type="radio" name="theme" id="theme-system" value="system">
-        <label for="theme-system"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#monitor"/></svg><span class="label-text">System</span></label>
-        <input type="radio" name="theme" id="theme-light" value="light">
-        <label for="theme-light"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#sun"/></svg><span class="label-text">Light</span></label>
-        <input type="radio" name="theme" id="theme-dark" value="dark">
-        <label for="theme-dark"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#moon"/></svg><span class="label-text">Dark</span></label>
-      </fieldset>
+      <button class="theme-switch" id="theme-switch" type="button" data-choice="system" hidden>
+        <svg class="icon icon-system" aria-hidden="true"><use href="assets/icons.svg#monitor"/></svg><svg class="icon icon-light" aria-hidden="true"><use href="assets/icons.svg#sun"/></svg><svg class="icon icon-dark" aria-hidden="true"><use href="assets/icons.svg#moon"/></svg>
+        <span class="tip">Theme: <span class="theme-name">System</span></span>
+      </button>
     </div>
   </header>
 

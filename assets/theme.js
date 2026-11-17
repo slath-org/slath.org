@@ -3,10 +3,13 @@
 //
 // Theme switcher. Loaded synchronously in <head> so a stored choice applies
 // before first paint. "system" (the default) leaves the decision to the
-// prefers-color-scheme media query in site.css.
+// prefers-color-scheme media query in site.css. One icon button shows the
+// current choice and moves to the next: system, light, dark.
 (function () {
   "use strict";
   var KEY = "slath-theme";
+  var ORDER = ["system", "light", "dark"];
+  var NAMES = { system: "System", light: "Light", dark: "Dark" };
   var root = document.documentElement;
 
   function read() {
@@ -52,17 +55,27 @@
   apply(read());
 
   document.addEventListener("DOMContentLoaded", function () {
-    var group = document.getElementById("theme-switch");
-    if (!group) return;
-    var current = read();
-    var inputs = group.querySelectorAll('input[name="theme"]');
-    for (var i = 0; i < inputs.length; i++) {
-      inputs[i].checked = inputs[i].value === current;
-      inputs[i].addEventListener("change", function (ev) {
-        apply(ev.target.value);
-        store(ev.target.value);
-      });
+    var button = document.getElementById("theme-switch");
+    if (!button) return;
+    var name = button.querySelector(".theme-name");
+    function show(choice) {
+      button.setAttribute("data-choice", choice);
+      if (name) name.textContent = NAMES[choice];
     }
-    group.hidden = false;
+    show(read());
+    button.addEventListener("click", function () {
+      var current = button.getAttribute("data-choice") || "system";
+      var next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length];
+      apply(next);
+      store(next);
+      show(next);
+    });
+    // Escape hides the tooltip until the pointer or focus leaves.
+    button.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape") button.classList.add("tip-closed");
+    });
+    button.addEventListener("blur", function () { button.classList.remove("tip-closed"); });
+    button.addEventListener("mouseleave", function () { button.classList.remove("tip-closed"); });
+    button.hidden = false;
   });
 })();
