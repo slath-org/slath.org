@@ -86,6 +86,7 @@
   --measure-text: 48rem;
   --icon-size: 1.125rem;
   --icon-size-sm: 1rem;
+  --hero-mark-size: 44rem;
 }
 
 @media (pointer: coarse) {
@@ -553,8 +554,45 @@ main > section + section { border-top: var(--border-width) solid var(--border); 
 }
 .eyebrow .icon { width: var(--icon-size-sm); height: var(--icon-size-sm); }
 
-/* Hero */
-.hero { padding-block: var(--space-7); }
+/* Hero, with the logo once as a large, quiet mark behind it. It's drawn
+   as a mask in the border color, so it follows the theme and stays out of
+   the way of text; it's left out when the system asks for more contrast. */
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: var(--space-7);
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -6rem;
+  inset-inline-end: -10rem;
+  width: var(--hero-mark-size);
+  aspect-ratio: 1;
+  background-color: color-mix(in srgb, var(--border) 55%, var(--bg));
+  -webkit-mask: url("logo-light.svg") center / contain no-repeat;
+  mask: url("logo-light.svg") center / contain no-repeat;
+  pointer-events: none;
+}
+@media (max-width: 64rem) {
+  .hero::before {
+    top: -4rem;
+    inset-inline-end: -8rem;
+    width: calc(var(--hero-mark-size) * 0.6);
+  }
+}
+@media (max-width: 40rem) {
+  .hero::before {
+    top: -2rem;
+    inset-inline-end: -5rem;
+    width: calc(var(--hero-mark-size) * 0.4);
+  }
+}
+@media (prefers-contrast: more), (forced-colors: active) {
+  .hero::before { display: none; }
+}
 .hero .tile-plain { justify-content: center; gap: var(--gap-groups); }
 .hero .lede {
   max-width: var(--measure-text);
