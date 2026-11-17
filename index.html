@@ -440,40 +440,46 @@ sudo slath setup --public-url https://git.example.org \
       <div class="wrap">
         <div class="section-head">
           <h2 id="roadmap-title">Roadmap</h2>
-          <p>Releases have no dates. Each one ships when its acceptance tests pass, and those cover security, accessibility, and upgrades along with features. Before 1.0, a minor release may change configuration and interfaces; the upgrade notes say how.</p>
-        </div>
-        <div class="table-wrap">
-          <table class="stack-table">
-            <caption class="visually-hidden">Releases up to 1.0</caption>
-            <thead>
-              <tr><th scope="col">Version</th><th scope="col">Theme</th><th scope="col">State</th></tr>
-            </thead>
-            <tbody>
-              <tr><td class="version"><a href="https://github.com/slath-org/slath/releases/tag/v0.1.1">0.1</a></td><td>Preview: accounts, SSH keys, organizations, repositories, code browser, API, backup and restore</td><td><span class="state state-done"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg>Released</span></td></tr>
-              <tr><td class="version"><a href="https://github.com/slath-org/slath/releases/tag/v0.2.0">0.2</a></td><td>Preview: single sign-on, passkeys, teams, branch protection, issues, notifications, search, import</td><td><span class="state state-done"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg>Released</span></td></tr>
-              <tr><td class="version"><a href="https://github.com/slath-org/slath/releases/tag/v0.3.0">0.3</a></td><td>Merge requests and forks, reviews, suggestions, statuses, webhooks, bots with guardrails, push protection, signed releases, and updates by restarting</td><td><span class="state state-done"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg>Released</span></td></tr>
-              <tr><td class="version">0.4</td><td>Stacks and agent work: review per change, the stack view, partial landing, landing by push, and work orders for agents</td><td><span class="state"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#circle-dot"/></svg>Next</span></td></tr>
-              <tr><td class="version">0.5</td><td>CI with GitHub Actions-style workflows on separate runners, a merge queue, and approval for outside contributions</td><td><span class="state state-planned">Planned</span></td></tr>
-              <tr><td class="version">0.9</td><td>Release candidate: data export, performance, and an external security review</td><td><span class="state state-planned">Planned</span></td></tr>
-              <tr><td class="version">1.0</td><td>Stable interfaces</td><td><span class="state state-planned">Planned</span></td></tr>
-            </tbody>
-          </table>
+          <p>Releases have no dates. Each one ships when its acceptance tests pass, and those cover security, accessibility, and upgrades along with features. Before 1.0, a release may change configuration and interfaces; its upgrade notes say how.</p>
         </div>
         <div class="bento">
           <div class="tile span-3">
             <header>
-              <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#layers"/></svg>Scope</p>
-              <h3>Not in 1.0</h3>
-              <p>Federation, a package registry, Git LFS, wikis, code search, and Kubernetes-native high availability. Some of them may come after 1.0.</p>
+              <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg>Available</p>
+              <h3>In Slath 0.3</h3>
             </header>
+            <ul class="facts">
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>Git over HTTPS and SSH, for Git and jj</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>Repositories, organizations, teams, and a code browser</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>Merge requests that follow changes across rebases, with reviews, threads, and suggestions</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>Forks, and merge requests from forks</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>Branch protection, required checks, and merge when ready</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>Issues, labels, milestones, notifications, and search</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>Single sign-on with OpenID Connect, passkeys, and two-factor authentication</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>Bots with guardrails for agents and CI</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>Push protection for secrets</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>REST API, webhooks, and commit statuses</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>Import from other Git servers</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#check"/></svg><span>Scheduled backups, <code>slath doctor</code>, updates by restarting, and signed releases</span></li>
+            </ul>
+            <a class="more" href="https://github.com/slath-org/slath/blob/v0.3.0/CHANGELOG.md">Changelog<svg class="icon" aria-hidden="true"><use href="assets/icons.svg#external-link"/></svg></a>
           </div>
           <div class="tile span-3">
             <header>
-              <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#network"/></svg>Federation</p>
-              <h3>ForgeFed after 1.0</h3>
-              <p>Slath 1.0 doesn't federate. Experiments with <a href="https://forgefed.org/">ForgeFed</a> are planned for 2.x; the AT Protocol and <a href="https://tangled.org/">Tangled</a> are a research topic, not a commitment. Until then, Slath builds what federation depends on: stable change identity, a complete API and webhooks, and full data export.</p>
+              <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#clock"/></svg>Planned</p>
+              <h3>Next, in about this order</h3>
             </header>
-            <a class="more" href="https://github.com/slath-org/slath/issues">Discuss the data model in the issue tracker<svg class="icon" aria-hidden="true"><use href="assets/icons.svg#external-link"/></svg></a>
+            <ul class="facts">
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#clock"/></svg><span>Stacks: review per change, a stack view, partial landing, and landing by push</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#clock"/></svg><span>Work orders and context for agents, and read-only MCP</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#clock"/></svg><span>Code owners, review tiers, and support for monorepos</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#clock"/></svg><span>CI with GitHub Actions-style workflows on separate runners</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#clock"/></svg><span>A merge queue, and approval for CI runs of outside contributions</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#clock"/></svg><span>Data export and an external security review</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#clock"/></svg><span>Stable interfaces with 1.0</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#clock"/></svg><span>Federation with <a href="https://forgefed.org/">ForgeFed</a>, as experiments after 1.0</span></li>
+            </ul>
+            <a class="more" href="https://github.com/slath-org/slath/issues">Discuss the plans in the issue tracker<svg class="icon" aria-hidden="true"><use href="assets/icons.svg#external-link"/></svg></a>
           </div>
         </div>
       </div>

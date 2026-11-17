@@ -785,62 +785,6 @@ main > section + section { border-top: var(--border-width) solid var(--border); 
   color: inherit;
 }
 
-/* Table */
-.table-wrap {
-  overflow-x: auto;
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-  line-height: var(--leading-body);
-}
-th, td {
-  padding: var(--space-3) var(--space-4);
-  border-bottom: var(--border-width) solid var(--border);
-  text-align: start;
-  vertical-align: top;
-}
-tbody tr:last-child > * { border-bottom: 0; }
-thead th {
-  color: var(--text-secondary);
-  font-weight: var(--weight-semibold);
-}
-td:first-child, th:first-child { white-space: nowrap; }
-.version {
-  font-family: var(--font-mono);
-  font-size: var(--code-size);
-  font-variant-numeric: tabular-nums;
-}
-
-/* A state in a word with an icon: released (check), next (dot), planned */
-.state {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--gap-inside);
-  white-space: nowrap;
-  font-weight: var(--weight-semibold);
-}
-.state .icon { width: var(--icon-size-sm); height: var(--icon-size-sm); }
-.state-done .icon { color: var(--success); }
-.state-planned { color: var(--text-secondary); font-weight: var(--weight-regular); }
-
-/* Below 40 rem, table rows become stacked blocks. */
-@media (max-width: 40rem) {
-  .stack-table thead { display: none; }
-  .stack-table tr {
-    display: grid;
-    gap: var(--gap-inside);
-    padding: var(--space-3) var(--space-4);
-    border-bottom: var(--border-width) solid var(--border);
-  }
-  .stack-table tbody tr:last-child { border-bottom: 0; }
-  .stack-table td { padding: 0; border: 0; white-space: normal; }
-}
-
 /* Footer */
 .site-footer {
   padding-block: var(--gap-sections);
@@ -855,4 +799,3 @@ td:first-child, th:first-child { white-space: nowrap; }
 .error-page { padding-block: var(--space-7); }
 .error-page .wrap { display: grid; gap: var(--gap-items); justify-items: start; }
 .error-page p { color: var(--text-secondary); font-size: var(--text-long); }
-.table-wrap + .bento { margin-top: var(--gap-items); }
