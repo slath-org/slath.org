@@ -1,0 +1,94 @@
+# SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de>
+# SPDX-License-Identifier: CC-BY-SA-4.0
+#
+# Publishes the documentation of each Slath release under docs/<version>/.
+# Every release of slath-org/slath attaches slath-docs-<version>.tar.gz,
+# checksummed in its SHA256SUMS and signed with build provenance. This
+# workflow downloads the archives of releases not published here yet,
+# verifies both against the Slath release workflow at that tag, adds them
+# with that release's scripts/publish_docs.py (docs/latest/,
+# docs/versions.json, docs/versions.html), commits with this repository's
+# own token, and requests a Pages build. No key or secret is involved.
+name: Release documentation
+
+on:
+  schedule:
+    - cron: "37 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-docs
+  cancel-in-progress: false
+
+jobs:
+  docs:
+    name: publish new release documentation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write # commit docs/
+      pages: write # request the Pages build
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE: slath-org/slath
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: true # the commit below is pushed with it
+      - name: Releases without documentation here
+        id: todo
+        run: |
+          todo=()
+          for tag in $(gh release list --repo "$SOURCE" --limit 50 --json tagName --jq '.[].tagName'); do
+            v="${tag#v}"
+            [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || continue
+            [ -d "docs/$v" ] && continue
+            if gh release view "$tag" --repo "$SOURCE" --json assets --jq '.assets[].name' | grep -qx "slath-docs-$v.tar.gz"; then
+              todo+=("$tag")
+            fi
+          done
+          echo "tags=${todo[*]}" >> "$GITHUB_OUTPUT"
+          echo "to publish: ${todo[*]:-nothing}"
+      - name: Download, verify, and add them
+        if: steps.todo.outputs.tags != ''
+        env:
+          TAGS: ${{ steps.todo.outputs.tags }}
+        run: |
+          for tag in $TAGS; do
+            v="${tag#v}"
+            dl="$RUNNER_TEMP/dl-$v" site="$RUNNER_TEMP/site-$v"
+            mkdir -p "$dl" "$site"
+            gh release download "$tag" --repo "$SOURCE" --dir "$dl" \
+              --pattern "slath-docs-$v.tar.gz" --pattern SHA256SUMS
+            # The checksum the release lists for it, and its provenance:
+            # built by the Slath release workflow for exactly this tag.
+            grep -q " slath-docs-$v.tar.gz\$" "$dl/SHA256SUMS"
+            (cd "$dl" && sha256sum --check --ignore-missing --strict SHA256SUMS)
+            gh attestation verify "$dl/slath-docs-$v.tar.gz" --repo "$SOURCE" \
+              --signer-workflow "$SOURCE/.github/workflows/release.yml" \
+              --source-ref "refs/tags/$tag"
+            # Regular files and directories only, nothing outside the target.
+            python3 -c 'import sys, tarfile; tarfile.open(sys.argv[1]).extractall(sys.argv[2], filter="data")' \
+              "$dl/slath-docs-$v.tar.gz" "$site"
+            gh api "repos/$SOURCE/contents/scripts/publish_docs.py?ref=$tag" --jq .content \
+              | base64 -d > "$RUNNER_TEMP/publish_docs.py"
+            python3 "$RUNNER_TEMP/publish_docs.py" --docs docs --site "$site" --version "$v"
+          done
+      - name: Commit, push, and build the site
+        if: steps.todo.outputs.tags != ''
+        env:
+          TAGS: ${{ steps.todo.outputs.tags }}
+          REPO: ${{ github.repository }}
+        run: |
+          git add docs
+          git diff --cached --quiet && exit 0
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "Publish the documentation of Slath ${TAGS//v/}"
+          git push -q
+          # A push with this workflow's token doesn't start the Pages build
+          # by itself on every setup; ask for one.
+          gh api --method POST "repos/$REPO/pages/builds" >/dev/null || true

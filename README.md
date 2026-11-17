@@ -28,6 +28,23 @@ Then open <http://localhost:8000>.
 | `assets/theme.js` | Theme switcher (system, light, dark), stored in `localStorage` |
 | `assets/icons.svg` | Lucide icon sprite |
 | `assets/fonts/` | Self-hosted fonts (Latin subset, variable weight) |
+| `docs/` | Documentation of each Slath release (written by the workflow below, not by hand) |
+| `.github/workflows/docs.yml` | Publishes the documentation of new Slath releases |
+
+## Documentation
+
+The documentation is written and built in the Slath repository (`docs/`,
+with its theme in `docs/theme/`, Apache-2.0), and every installation serves
+its own copy at `/-/docs/`. Each Slath release attaches it as
+`slath-docs-<version>.tar.gz`. Within the hour (or when started by hand
+under **Actions → Release documentation**), `.github/workflows/docs.yml`
+downloads the archive of each release not published here yet, checks its
+checksum and its build provenance (the Slath release workflow at that tag),
+and adds it as `docs/<version>/`, with `docs/latest/` (the newest release
+that isn't a pre-release), `docs/versions.json`, and `docs/versions.html`,
+using that release's `scripts/publish_docs.py`. It commits with the
+workflow's own token and requests a Pages build; no key or secret is
+needed. The pages carry their theme with them under `_theme/`.
 | `CNAME`, `.nojekyll` | GitHub Pages configuration |
 
 ## License
