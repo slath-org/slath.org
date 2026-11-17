@@ -6,9 +6,13 @@ Source of <https://slath.org>, the website of [Slath](https://github.com/slath-o
 a self-hosted code forge for Git and Jujutsu.
 
 It's plain static HTML and CSS with no build step and no third-party resources.
-The only script is `assets/theme.js`, the light/dark theme switcher. The design
-follows Slath's Weave design system: warm-neutral tokens, Source Sans 3 and
-JetBrains Mono (bundled as WOFF2), and Lucide icons in a local sprite.
+Two small scripts: `assets/theme.js`, the light/dark theme switcher, and
+`assets/site.js`, which remembers the choice under Try Slath and adds copy
+buttons to commands. The page works without either. The design
+follows Slath's Weave design system: its tokens (light, dark, and high
+contrast), spacing by relationship, Source Sans 3 and JetBrains Mono
+(bundled as WOFF2), and Lucide icons in a local sprite. The landing page is
+a bento grid of tiles, one per audience or task.
 
 ## Preview locally
 
@@ -26,10 +30,12 @@ Then open <http://localhost:8000>.
 | `404.html` | Not-found page (uses absolute asset paths) |
 | `assets/site.css` | Design tokens (light and dark) and components |
 | `assets/theme.js` | Theme switcher (system, light, dark), stored in `localStorage` |
+| `assets/site.js` | Remembered choices and copy buttons |
 | `assets/icons.svg` | Lucide icon sprite |
 | `assets/fonts/` | Self-hosted fonts (Latin subset, variable weight) |
 | `docs/` | Documentation of each Slath release (written by the workflow below, not by hand) |
 | `.github/workflows/docs.yml` | Publishes the documentation of new Slath releases |
+| `CNAME`, `.nojekyll` | GitHub Pages configuration |
 
 ## Documentation
 
@@ -45,7 +51,9 @@ that isn't a pre-release), `docs/versions.json`, and `docs/versions.html`,
 using that release's `scripts/publish_docs.py`. It commits with the
 workflow's own token and requests a Pages build; no key or secret is
 needed. The pages carry their theme with them under `_theme/`.
-| `CNAME`, `.nojekyll` | GitHub Pages configuration |
+
+The landing page links to `docs/latest/`, so its links work once a
+release's documentation is published.
 
 ## License
 
