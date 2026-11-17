@@ -356,7 +356,8 @@ code { font-size: 0.875em; }
    menu, a disclosure that opens without scripts too. */
 .site-header .wrap { flex-wrap: nowrap; }
 .brand,
-.theme-switch { flex: none; }
+.theme-switch,
+.icon-button { flex: none; }
 .site-nav { margin-inline-end: auto; }
 .site-nav ul {
   display: flex;
@@ -379,8 +380,8 @@ code { font-size: 0.875em; }
 .nav-menu { display: none; position: relative; }
 .nav-menu summary { list-style: none; }
 .nav-menu summary::-webkit-details-marker { display: none; }
-.nav-menu .chevron { transition: transform var(--motion-fast); }
-.nav-menu[open] .chevron { transform: rotate(180deg); }
+.nav-menu[open] > summary { background: var(--surface-subtle); color: var(--text); }
+.nav-menu[open] > summary .tip { clip-path: inset(50%); }
 .menu-panel {
   position: absolute;
   top: calc(100% + var(--space-1));
@@ -408,13 +409,16 @@ code { font-size: 0.875em; }
   .site-nav .nav-wide { display: none; }
   .nav-menu { display: block; }
   .site-nav { margin-inline: auto 0; }
-  .site-header .wrap { gap: var(--space-2); }
+  .site-header .wrap { gap: var(--space-1); }
 }
 
-/* Theme switcher: one icon button that shows the current choice (system,
+/* Icon buttons (the menu and the theme switcher): no border until
+   hovered, and their name is their tooltip. The theme switcher is one
+   icon button that shows the current choice (system,
    light, or dark) and moves to the next. Its name is its tooltip, shown on
    hover and keyboard focus. */
-.theme-switch {
+.theme-switch,
+.icon-button {
   position: relative;
   display: inline-grid;
   place-items: center;
@@ -429,12 +433,14 @@ code { font-size: 0.875em; }
   transition: background-color var(--motion-fast), color var(--motion-fast);
 }
 .theme-switch[hidden] { display: none; }
-.theme-switch:hover { background: var(--surface-subtle); color: var(--text); }
+.theme-switch:hover,
+.icon-button:hover { background: var(--surface-subtle); color: var(--text); }
 .theme-switch .icon { display: none; }
 .theme-switch[data-choice="system"] .icon-system,
 .theme-switch[data-choice="light"] .icon-light,
 .theme-switch[data-choice="dark"] .icon-dark { display: block; }
-.theme-switch .tip {
+.theme-switch .tip,
+.icon-button .tip {
   position: absolute;
   top: calc(100% + var(--space-1));
   inset-inline-end: 0;
@@ -449,7 +455,9 @@ code { font-size: 0.875em; }
   clip-path: inset(50%);
 }
 .theme-switch:hover .tip,
-.theme-switch:focus-visible .tip { clip-path: none; }
+.theme-switch:focus-visible .tip,
+.icon-button:hover .tip,
+.icon-button:focus-visible .tip { clip-path: none; }
 .theme-switch.tip-closed .tip { clip-path: inset(50%); }
 
 /* Buttons: one primary per region, the others neutral */
