@@ -87,6 +87,7 @@
   --icon-size: 1.125rem;
   --icon-size-sm: 1rem;
   --hero-mark-size: 44rem;
+  --glass-blur: 12px;
   --shadow-overlay: 0 4px 16px color-mix(in srgb, var(--shadow-color) 18%, transparent), 0 1px 3px color-mix(in srgb, var(--shadow-color) 12%, transparent);
 }
 
@@ -242,6 +243,9 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-padding-top: var(--space-5);
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
 }
 
 body {
@@ -850,3 +854,26 @@ main > section + section { border-top: var(--border-width) solid var(--border); 
 .error-page { padding-block: var(--space-7); }
 .error-page .wrap { display: grid; gap: var(--gap-items); justify-items: start; }
 .error-page p { color: var(--text-secondary); font-size: var(--text-long); }
+
+/* Translucent surfaces: tiles and the menu let what's behind them (the
+   logo mark, the page) show through, blurred. Where blurring isn't
+   supported, or the system asks for more contrast, less transparency, or
+   forced colors, they stay solid. Tooltips and code stay solid always. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .tile:not(.tile-plain),
+  .menu-panel {
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+  }
+  /* Menu links sit over page text, so the menu lets less through. */
+  .menu-panel { background: color-mix(in srgb, var(--surface) 82%, transparent); }
+}
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  .tile:not(.tile-plain),
+  .menu-panel {
+    background: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
