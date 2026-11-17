@@ -37,6 +37,21 @@
     });
   }
 
+  // The menu of the top bar on narrow screens closes on Escape, on a click
+  // outside it, and after following one of its links.
+  var menu = document.querySelector(".nav-menu");
+  if (menu) {
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape" && menu.open) {
+        menu.open = false;
+        menu.querySelector("summary").focus();
+      }
+    });
+    document.addEventListener("click", function (ev) {
+      if (menu.open && (!menu.contains(ev.target) || ev.target.closest(".menu-panel a"))) menu.open = false;
+    });
+  }
+
   if (!navigator.clipboard) return;
   var status = document.getElementById("copy-status");
   var buttons = document.querySelectorAll("button[data-copy]");

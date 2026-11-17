@@ -87,6 +87,7 @@
   --icon-size: 1.125rem;
   --icon-size-sm: 1rem;
   --hero-mark-size: 44rem;
+  --shadow-overlay: 0 4px 16px color-mix(in srgb, var(--shadow-color) 18%, transparent), 0 1px 3px color-mix(in srgb, var(--shadow-color) 12%, transparent);
 }
 
 @media (pointer: coarse) {
@@ -117,6 +118,7 @@
   --info: #3e6399;
   --info-fg: #33547f;
   --info-bg: #e3e9f0;
+  --shadow-color: #262b28;
 }
 
 /* Dark theme: follows the system unless the visitor picked light */
@@ -140,6 +142,7 @@
     --info: #8badda;
     --info-fg: #a6c1e4;
     --info-bg: #1e2835;
+    --shadow-color: #000000;
   }
 }
 :root[data-theme="dark"] {
@@ -161,6 +164,7 @@
   --info: #8badda;
   --info-fg: #a6c1e4;
   --info-bg: #1e2835;
+  --shadow-color: #000000;
 }
 
 /* High contrast, when the system asks for more */
@@ -348,6 +352,11 @@ code { font-size: 0.875em; }
   :root:not([data-theme="light"]) .logo-light { display: none; }
   :root:not([data-theme="light"]) .logo-dark { display: block; }
 }
+/* The bar is one row at every width: below 40 rem the places move into a
+   menu, a disclosure that opens without scripts too. */
+.site-header .wrap { flex-wrap: nowrap; }
+.brand,
+.theme-switch { flex: none; }
 .site-nav { margin-inline-end: auto; }
 .site-nav ul {
   display: flex;
@@ -367,6 +376,40 @@ code { font-size: 0.875em; }
   text-decoration: none;
 }
 .site-nav a:hover { color: var(--text); }
+.nav-menu { display: none; position: relative; }
+.nav-menu summary { list-style: none; }
+.nav-menu summary::-webkit-details-marker { display: none; }
+.nav-menu .chevron { transition: transform var(--motion-fast); }
+.nav-menu[open] .chevron { transform: rotate(180deg); }
+.menu-panel {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  inset-inline-end: 0;
+  z-index: 20;
+  min-width: 12rem;
+  max-width: calc(100vw - 2 * var(--space-4));
+  padding: var(--space-1);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-overlay);
+}
+.menu-panel ul { flex-direction: column; gap: 0; }
+.menu-panel a {
+  display: flex;
+  min-height: var(--control-height);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--text-base);
+}
+.menu-panel a:hover { background: var(--surface-subtle); }
+@media (max-width: 40rem) {
+  .site-nav .nav-wide { display: none; }
+  .nav-menu { display: block; }
+  .site-nav { margin-inline: auto 0; }
+  .site-header .wrap { gap: var(--space-2); }
+}
 
 /* Theme switcher: one icon button that shows the current choice (system,
    light, or dark) and moves to the next. Its name is its tooltip, shown on
