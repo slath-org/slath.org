@@ -1,0 +1,356 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Webhooks · Slath 0.3.0 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0">Version 0.3.0: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="webhooks">Webhooks</h1>
+<section class="api-op" aria-labelledby="list_org_webhooks">
+<h2 id="list_org_webhooks"><code>GET /api/v1/orgs/{org}/webhooks</code></h2>
+<p>The organization&#39;s webhooks (owners); they receive the events of every
+repository of the organization.</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_org_webhook">
+<h2 id="create_org_webhook"><code>POST /api/v1/orgs/{org}/webhooks</code></h2>
+<p>Creates an organization webhook (owners).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>WebhookBody</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_org_webhook">
+<h2 id="get_org_webhook"><code>GET /api/v1/orgs/{org}/webhooks/{id}</code></h2>
+<p>One organization webhook.</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="update_org_webhook">
+<h2 id="update_org_webhook"><code>PATCH /api/v1/orgs/{org}/webhooks/{id}</code></h2>
+<p>Changes an organization webhook.</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>WebhookBody</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="delete_org_webhook">
+<h2 id="delete_org_webhook"><code>DELETE /api/v1/orgs/{org}/webhooks/{id}</code></h2>
+<p>Deletes an organization webhook.</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_org_deliveries">
+<h2 id="list_org_deliveries"><code>GET /api/v1/orgs/{org}/webhooks/{id}/deliveries</code></h2>
+<p>An organization webhook&#39;s deliveries.</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>limit</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_org_delivery">
+<h2 id="get_org_delivery"><code>GET /api/v1/orgs/{org}/webhooks/{id}/deliveries/{delivery}</code></h2>
+<p>One delivery of an organization webhook.</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>delivery</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="redeliver_org_delivery">
+<h2 id="redeliver_org_delivery"><code>POST /api/v1/orgs/{org}/webhooks/{id}/deliveries/{delivery}/redeliver</code></h2>
+<p>Sends a delivery of an organization webhook again.</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>delivery</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>202</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="ping_org_webhook">
+<h2 id="ping_org_webhook"><code>POST /api/v1/orgs/{org}/webhooks/{id}/ping</code></h2>
+<p>Sends a `ping` event to an organization webhook.</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>202</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_repo_webhooks">
+<h2 id="list_repo_webhooks"><code>GET /api/v1/repos/{ns}/{repo}/webhooks</code></h2>
+<p>The repository&#39;s webhooks (administrators).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_repo_webhook">
+<h2 id="create_repo_webhook"><code>POST /api/v1/repos/{ns}/{repo}/webhooks</code></h2>
+<p>Creates a webhook (administrators). Without a secret, Slath generates
+one and returns it in this answer only.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>WebhookBody</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_repo_webhook">
+<h2 id="get_repo_webhook"><code>GET /api/v1/repos/{ns}/{repo}/webhooks/{id}</code></h2>
+<p>One webhook.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="update_repo_webhook">
+<h2 id="update_repo_webhook"><code>PATCH /api/v1/repos/{ns}/{repo}/webhooks/{id}</code></h2>
+<p>Changes a webhook; turning it on again clears its failure count. The
+one who changes it becomes its principal.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>WebhookBody</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="delete_repo_webhook">
+<h2 id="delete_repo_webhook"><code>DELETE /api/v1/repos/{ns}/{repo}/webhooks/{id}</code></h2>
+<p>Deletes a webhook and its delivery log.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_repo_deliveries">
+<h2 id="list_repo_deliveries"><code>GET /api/v1/repos/{ns}/{repo}/webhooks/{id}/deliveries</code></h2>
+<p>A webhook&#39;s deliveries, newest first (kept 30 days).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>limit</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_repo_delivery">
+<h2 id="get_repo_delivery"><code>GET /api/v1/repos/{ns}/{repo}/webhooks/{id}/deliveries/{delivery}</code></h2>
+<p>One delivery with its payload and every attempt.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>delivery</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="redeliver_repo_delivery">
+<h2 id="redeliver_repo_delivery"><code>POST /api/v1/repos/{ns}/{repo}/webhooks/{id}/deliveries/{delivery}/redeliver</code></h2>
+<p>Sends a delivery&#39;s payload again, as a new delivery.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>delivery</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>202</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="ping_repo_webhook">
+<h2 id="ping_repo_webhook"><code>POST /api/v1/repos/{ns}/{repo}/webhooks/{id}/ping</code></h2>
+<p>Sends a `ping` event.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>202</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../api/user.html">Previous: User</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html" aria-current="page">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

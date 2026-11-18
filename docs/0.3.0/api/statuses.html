@@ -1,0 +1,115 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Statuses · Slath 0.3.0 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0">Version 0.3.0: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="statuses">Statuses</h1>
+<section class="api-op" aria-labelledby="list_statuses">
+<h2 id="list_statuses"><code>GET /api/v1/repos/{ns}/{repo}/commits/{oid}/statuses</code></h2>
+<p>The latest status of each context on a commit.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>oid</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_status">
+<h2 id="create_status"><code>POST /api/v1/repos/{ns}/{repo}/statuses/{oid}</code></h2>
+<p>Reports a status on a commit (scope `statuses:write`). The latest
+status per context wins.</p>
+<p>Token scopes: <code>statuses:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>oid</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>NewStatus</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../api/repos.html">Previous: Repos</a><a rel="next" href="../api/user.html">Next: User</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html" aria-current="page">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

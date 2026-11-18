@@ -1,0 +1,157 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Releasing · Slath 0.3.0 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0">Version 0.3.0: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="releasing">Releasing<a href="#releasing" aria-label="Link to heading 'Releasing'" class="anchor"></a></h1>
+<p>A release is built once and qualified on exactly what was built. Pushing a
+tag <code>vX.Y.Z</code> runs <code>.github/workflows/release.yml</code>:</p>
+<ol>
+<li><strong>Preconditions:</strong> <code>upgrade-notes/X.Y.Z.toml</code> exists and matches
+<code>REQUIRED_SCHEMA</code>, and the newest finished runs on <code>main</code> of the nightly
+workflows (upgrade matrix, OIDC providers, Git/jj matrix) are green. A
+run started by hand under <strong>Actions</strong> counts like a scheduled one, for
+example when a new nightly hasn't run on its schedule yet. A red
+nightly blocks the release until it's fixed.</li>
+<li><strong>Build:</strong> one image per architecture (x86-64 and aarch64, on native
+runners), pushed to <code>ghcr.io/slath-org/slath</code> by digest only, and the
+<code>slath</code> binary copied out of it with its SHA-256. The binary is built
+on Debian trixie and needs glibc 2.41 or newer.</li>
+<li><strong>Qualify</strong> on those artifacts: the test suite (with the pinned jj
+versions) and the browser tests in three shards, with <code>SLATH_BIN</code> set
+to the downloaded binary; <code>scripts/test-compose.sh</code> and
+<code>scripts/test-setup.sh</code> with the image by digest, which these jobs pull
+with their own token (<code>packages: read</code>), since the package is private
+until someone makes it public; and the upgrade
+matrix from the published binary of every earlier release since 0.3.0
+and of the coming release's candidates (<code>SLATH_MATRIX_FROM=releases</code>,
+sources chosen by <code>scripts/upgrade_sources.py</code>).</li>
+<li><strong>Gate:</strong> fails unless every job above succeeded; a skipped or
+cancelled job counts as a failure. It writes <code>report.md</code>
+(<code>scripts/release_report.py</code>): every artifact with its SHA-256, the
+image digests, and each job's test totals.</li>
+<li><strong>Sign and publish:</strong> Sigstore signatures with build provenance for the
+binaries, <code>SHA256SUMS</code>, the Compose bundle, and the image index, made
+with the workflow's own GitHub identity. They're verified online and
+offline (and a modified file must fail) before the image gets its tags
+<code>X.Y.Z</code>, <code>X.Y</code>, and <code>latest</code> (a pre-release such as <code>X.Y.Z-rc.1</code> gets
+only its own tag and is marked as a pre-release) and the GitHub
+release is created with the files, the signature bundle, and the
+report. Users verify as in <code>docs/admin/verify.md</code>.</li>
+<li><strong>Documentation:</strong> the publish job builds the release's documentation
+with the built image (<code>slath docs build --published</code>) and attaches it
+as <code>slath-docs-X.Y.Z.tar.gz</code>, listed in <code>SHA256SUMS</code> and signed like
+the other files. The website repository's own workflow
+(<code>.github/workflows/docs.yml</code> in slath-org/slath.org) picks it up
+within the hour, or at once when started by hand: it checks the
+checksum and that the provenance names this release workflow and tag,
+adds it as <code>docs/X.Y.Z/</code> with this release's
+<code>scripts/publish_docs.py</code> (<code>docs/latest/</code> for the newest release that
+isn't a pre-release, <code>docs/versions.json</code>, <code>docs/versions.html</code>),
+commits with its own token, and requests a Pages build. No key or
+secret connects the two repositories.</li>
+</ol>
+<p>Before the tag:</p>
+<ul>
+<li>
+<p>A release candidate (<code>vX.Y.Z-rc.N</code>) goes through the same workflow and
+needs the same preparation: the workspace version <code>X.Y.Z-rc.N</code> and its
+own <code>upgrade-notes/X.Y.Z-rc.N.toml</code>. It stays a pre-release: no <code>X.Y</code>
+or <code>latest</code> image tag, and the website's <code>docs/latest/</code> keeps the last
+release. Never reuse a tag after a failed run; delete that pre-release
+and tag the next candidate.</p>
+</li>
+<li>
+<p>Finish <code>upgrade-notes/X.Y.Z.toml</code> and the CHANGELOG section, bump the
+workspace version and <code>SLATH_VERSION</code>'s default in
+<code>deploy/compose/compose.yml</code>, and add the release's shipped
+configurations to <code>tests/fixtures/config/</code> and its schema fixture
+(<code>just schema-fixture</code>).</p>
+</li>
+</ul>
+<p>After the workflow:</p>
+<ul>
+<li>Download the JUnit artifacts and check the milestone's conformance gate
+with <code>just conformance-report</code> (the cases file isn't in the repository,
+so CI can't).</li>
+<li>Someone other than the release author installs from the published
+artifacts on both profiles, restores a backup, updates from a previous
+build, and checks the SSH boundary; the results go into the release
+notes.</li>
+</ul>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../dev/upgrades.html">Previous: Keeping upgrades safe</a><a rel="next" href="../api/index.html">Next: API reference</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html" aria-current="page">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

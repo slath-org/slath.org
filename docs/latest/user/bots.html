@@ -1,0 +1,339 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Bots · Slath 0.3.0 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0">Version 0.3.0: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="bots">Bots<a href="#bots" aria-label="Link to heading 'Bots'" class="anchor"></a></h1>
+<p>A bot is an account for automation: a CI system, a release script, or an
+AI coding agent. It belongs to a person or an organization, acts only
+through the credentials its owner gives it, and is marked as a bot
+wherever it appears, so nobody mistakes its work for a person's.</p>
+<p>For setting up agents with bots, see <a href="agents.html">Working with AI agents</a>.</p>
+<h2 id="creating-a-bot">Creating a bot<a href="#creating-a-bot" aria-label="Link to heading 'Creating a bot'" class="anchor"></a></h2>
+<p>Anyone can create bots of their own under <strong>Settings → Bots</strong>. An
+organization's bots are created by the organization's owners on the
+organization's <strong>Bots</strong> page. Each bot has a page (<code>/-/bots/&lt;name&gt;</code>) for its
+tokens and SSH keys, which only its managers can open: its owner, or for
+an organization's bot, the organization's owners.</p>
+<p>Through the API, with a token that has the <code>user:write</code> scope:</p>
+<pre tabindex="0"><code class="language-sh"># A bot of your own
+curl -X POST https://git.example.org/api/v1/user/bots \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"username": "alice-ci", "display_name": "Alice'\''s CI"}'
+
+# A bot of the organization acme (organization owners)
+curl -X POST https://git.example.org/api/v1/orgs/acme/bots \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"username": "acme-release"}'
+</code></pre>
+<p>A bot's name follows the same rules as usernames and shares their
+namespace: it can't be the name of a user, an organization, or another
+bot. <code>GET /api/v1/user/bots</code>, <code>GET /api/v1/orgs/{org}/bots</code>, and
+<code>GET /api/v1/bots/{name}</code> list and show the bots you manage. Other
+people's bots don't appear there.</p>
+<p>A bot's page also changes its avatar (PNG, JPEG, or WebP, cropped to a
+square and stored without metadata) and its display name. Without an
+uploaded avatar, one is generated from the bot's name.</p>
+<h2 id="tokens">Tokens<a href="#tokens" aria-label="Link to heading 'Tokens'" class="anchor"></a></h2>
+<p>A bot works through tokens that start with <code>slath_bot_</code>. They are like
+personal access tokens, with stricter rules:</p>
+<ul>
+<li><strong>Restricted to repositories.</strong> Each token names 1 to 50 repositories,
+and works for nothing else. Name only repositories the bot needs.</li>
+<li><strong>Limited scopes.</strong> <code>repo:read</code>, <code>repo:write</code>, <code>issues:write</code>,
+<code>mrs:write</code>, <code>statuses:write</code>, and <code>user:read</code>. Never <code>user:write</code> or
+<code>admin</code>: a bot can't change its own keys or tokens.</li>
+<li><strong>Short-lived.</strong> A bot token expires after 30 days unless its owner
+picks another period, and after 90 days at the most. Site
+administrators can change both (see
+<a href="../admin/accounts.html#bots">Accounts</a>).</li>
+</ul>
+<p>The token is shown once, when it's created. Create one under <strong>Tokens</strong> on
+the bot's page; Slath asks for your password first if you haven't
+confirmed it recently. A site administrator can also create one on the
+server:</p>
+<pre tabindex="0"><code class="language-sh">slath admin create-bot --owner alice --name alice-ci \
+  --token-scopes repo:write,mrs:write,statuses:write --repo alice/app
+</code></pre>
+<p><code>slath admin create-bot</code> creates the bot, and with <code>--token-scopes</code> also a
+token for the repositories given with <code>--repo</code> (repeat it for several);
+<code>--token-days</code> sets the validity and <code>--output json</code> prints the result as
+JSON. Tokens can't be created through the API, just as personal tokens
+can't.</p>
+<p><code>GET /api/v1/bots/{name}/tokens</code> lists a bot's tokens (never the
+secrets), and <code>DELETE /api/v1/bots/{name}/tokens/{id}</code> revokes one. A
+<code>slath_bot_</code> token only ever authenticates a bot, and a <code>slath_pat_</code> token
+only a person.</p>
+<p>A bot still needs a role on each repository, like anyone else: add it as
+a collaborator or to a team. The token's repositories only narrow what
+that role allows.</p>
+<h2 id="ssh-keys">SSH keys<a href="#ssh-keys" aria-label="Link to heading 'SSH keys'" class="anchor"></a></h2>
+<p>For Git over SSH, give the bot its own key pair. Its owner adds the public
+key under <strong>SSH keys</strong> on the bot's page, or through the API with a token
+that has <code>user:write</code>:</p>
+<pre tabindex="0"><code class="language-sh">curl -X POST https://git.example.org/api/v1/bots/alice-ci/keys \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d "{\"title\": \"ci runner\", \"key\": \"$(cat ci.pub)\"}"
+</code></pre>
+<p><code>GET /api/v1/bots/{name}/keys</code> lists them and
+<code>DELETE /api/v1/bots/{name}/keys/{id}</code> removes one.</p>
+<h2 id="roles-and-their-limits">Roles and their limits<a href="#roles-and-their-limits" aria-label="Link to heading 'Roles and their limits'" class="anchor"></a></h2>
+<p>A bot gets roles on repositories like anyone else: as a collaborator or
+through a team. A bot that belongs to a person can never do more than
+that person on the same repository: its role is the lower of its own and
+its owner's. A bot with maintain access to a repository where its owner
+only reads can only read; a repository its owner can't see doesn't exist
+for the bot either, in lists and search included. An organization's bot
+isn't limited this way, since organization owners manage it.</p>
+<p>The owner of a bot also owns what's in the bot's namespace, such as forks
+the bot made; for an organization's bot, the organization's owners do.</p>
+<p>When a site administrator suspends a person, their bots are suspended
+too, and they come back when the person is reactivated. A bot that was
+suspended on its own stays suspended, and a bot can't be reactivated
+while its owner is suspended.</p>
+<h2 id="guardrails-on-protected-branches">Guardrails on protected branches<a href="#guardrails-on-protected-branches" aria-label="Link to heading 'Guardrails on protected branches'" class="anchor"></a></h2>
+<p>Branch protection (repository <strong>Settings → Branch protection</strong>, or
+<code>POST /api/v1/repos/{ns}/{repo}/protections</code>) keeps bots in check:</p>
+<ul>
+<li><strong>Approvals by bots don't count</strong> toward the approvals a protected branch
+needs, unless the rule has <strong>Count approvals by bots</strong> on
+(<code>bots_count_as_approvers</code>). Even then, a bot never approves its own
+owner's merge request, just as its statuses never count for its owner's
+required checks.</li>
+<li><strong>Bots don't merge into or push to protected branches</strong>, whatever their
+role, unless the rule lists them under <strong>Bots that may merge and push</strong>
+(<code>bot_merge_allowlist</code>). This covers merging by hand, merging when ready,
+updating a merge request's branch, and pushing directly. When several
+rules match a branch, every one of them must list the bot.</li>
+</ul>
+<h2 id="sensitive-paths">Sensitive paths<a href="#sensitive-paths" aria-label="Link to heading 'Sensitive paths'" class="anchor"></a></h2>
+<p>Some files steer what runs, who reviews, what the secret scanner allows, or
+what agents are told. Bots can't change them, on any branch:</p>
+<ul>
+<li>CI workflows: <code>.slath/workflows/</code>, <code>.github/workflows/</code>,
+<code>.gitea/workflows/</code>, <code>.forgejo/workflows/</code>;</li>
+<li>everything under <code>.slath/</code>, such as the reviewer file and the secret-scan
+allowlist <code>.slath/secret-scan.toml</code>;</li>
+<li>code owners: <code>CODEOWNERS</code>, <code>.github/CODEOWNERS</code>, <code>.gitea/CODEOWNERS</code>,
+<code>docs/CODEOWNERS</code>;</li>
+<li>agent instructions: <code>AGENTS.md</code>, <code>AGENT.md</code>, <code>CLAUDE.md</code>, and <code>GEMINI.md</code>
+in any folder, <code>.github/copilot-instructions.md</code>, <code>.github/instructions/</code>,
+<code>.cursorrules</code>, <code>.cursor/rules/</code>, <code>.windsurfrules</code>, <code>.clinerules</code>, and
+<code>REVIEW.md</code>.</li>
+</ul>
+<p>A repository adds its own paths under <strong>Settings → Branch protection →
+Sensitive paths</strong>, one glob per line (<code>deploy/**</code>, <code>Makefile</code>; <code>**</code> any
+path, <code>*</code> within a folder name, <code>?</code> one character), or with
+<code>PUT /api/v1/repos/{ns}/{repo}/sensitive-paths</code> and <code>{"paths": [...]}</code>.
+Whoever manages branch protection can change them; anyone who can read the
+repository sees the list at <code>GET …/sensitive-paths</code>. The built-in paths
+always apply, and so do paths the instance's administrators add for every
+repository (listed next to the built-in ones).</p>
+<p>Names match regardless of upper and lower case. A bot's push is rejected
+when a commit it adds creates, changes, renames, or deletes one of these
+files; the rejection names each file and commit:</p>
+<pre tabindex="0"><code class="language-text">remote: slath: bots can't change sensitive paths:
+remote: slath:   .slath/workflows/ci.yml (commit 3f2a9c1d0e)
+remote: slath: ask a person to make this change
+remote: slath: push rejected
+</code></pre>
+<p>Commits the repository already has, such as a person's work merged into
+the bot's branch, don't count. Bots can't apply review suggestions to these
+files either. People's pushes aren't affected. Each rejection is recorded
+in the audit log.</p>
+<p>On a protected branch, a merge request that changes a sensitive path needs
+an approval from a person with the maintain role (see
+<a href="merge-requests.html#reviews">reviews</a>); bot approvals
+never count for it.</p>
+<h2 id="iterating-merge-requests">Iterating merge requests<a href="#iterating-merge-requests" aria-label="Link to heading 'Iterating merge requests'" class="anchor"></a></h2>
+<p>A merge request a bot opens starts out <strong>iterating</strong>: the bot can push as
+often as it needs to without taking anyone's attention. Reviewers it asks
+for are recorded, but they aren't notified, and the merge request isn't in
+their review requests yet. Watchers, mentioned people, and assignees hear
+about it as usual, CI runs as usual, and an iterating merge request can't
+be merged.</p>
+<p>When the work is ready, the bot marks it ready (<code>PATCH /api/v1/repos/{ns}/{repo}/merge-requests/{n}</code> with <code>{"draft": false}</code>), or
+a person who can edit the merge request does, with <strong>Mark as ready</strong>. On a
+protected branch it then waits until every required check passes on its
+latest revision; until then its <code>attention</code> in the API is
+<code>waiting_for_checks</code>. Its reviewers are asked once, when it's ready:</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th><code>attention</code></th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>iterating</code></td>
+<td>The bot is still working; nobody is asked to review.</td>
+</tr>
+<tr>
+<td><code>waiting_for_checks</code></td>
+<td>Marked ready; reviewers are asked once the required checks pass.</td>
+</tr>
+<tr>
+<td><code>ready</code></td>
+<td>Reviewers were asked, as for anyone's merge request.</td>
+</tr>
+</tbody>
+</table></div>
+<p>A failing check doesn't send it back to iterating, and later pushes don't
+either. To ask reviewers as soon as a bot's merge request is marked ready,
+turn off <strong>Ask reviewers of a bot's merge request only once the required
+checks pass</strong> in the branch protection rule (<code>ready_waits_for_checks</code>).</p>
+<h2 id="rate-limits">Rate limits<a href="#rate-limits" aria-label="Link to heading 'Rate limits'" class="anchor"></a></h2>
+<p>Bots make at most 2,000 API requests per hour (site setting
+<code>[limits] bot_requests_per_hour</code>), fewer than people. The response headers
+<code>RateLimit-Limit</code>, <code>RateLimit-Remaining</code>, and <code>RateLimit-Reset</code> say where a
+bot stands.</p>
+<h2 id="what-your-bots-are-doing">What your bots are doing<a href="#what-your-bots-are-doing" aria-label="Link to heading 'What your bots are doing'" class="anchor"></a></h2>
+<p>The bot lists (<strong>Settings → Bots</strong> and an organization's <strong>Bots</strong> page)
+show each bot's state, its open merge requests, its last push, when its
+next token expires, and its API requests this hour; a bot's page lists its
+newest open merge requests and pushes. In the API,
+<code>GET /api/v1/bots/&lt;name&gt;/overview</code> (<code>user:read</code>) shows a bot's managers and
+site administrators what it's up to: its state and whether a freeze
+applies, its open merge requests (the count and the newest 5), its newest
+5 pushes, the token that expires next, and its API requests in the
+current hour. Merge requests and pushes in repositories you can't read
+aren't counted or listed. The request count comes from the server process
+that answers, so behind several Slath processes it's that process's share.</p>
+<h2 id="stopping-a-bot">Stopping a bot<a href="#stopping-a-bot" aria-label="Link to heading 'Stopping a bot'" class="anchor"></a></h2>
+<p>If a bot misbehaves or one of its credentials may have leaked, stop it
+with <strong>Stop bot</strong> at the bottom of its page, or through the API:</p>
+<pre tabindex="0"><code class="language-sh">curl -X POST https://git.example.org/api/v1/bots/alice-ci/stop \
+  -H "Authorization: Bearer $TOKEN"     # a token with user:write
+</code></pre>
+<p>A stop takes effect at once: the bot is suspended, every token of it is
+revoked, its SSH keys are removed, and a push it has already started is
+refused before it changes anything. Its memberships, merge requests,
+comments, and statuses stay. The bot's managers and site administrators
+can stop it; on a server, <code>slath admin bot stop alice-ci</code> does the same.</p>
+<p><strong>Re-enable bot</strong> on its page, <code>POST /api/v1/bots/alice-ci/start</code>, or
+<code>slath admin bot start alice-ci</code> re-enables a stopped bot. It comes back without credentials, so create new
+tokens and keys for it. A bot that a site administrator suspended, or that
+was suspended with its owner, can't be re-enabled this way. Stops and
+re-enables are in the audit log (<code>bot.stop</code>, <code>bot.start</code>).</p>
+<h2 id="freezing-all-bots">Freezing all bots<a href="#freezing-all-bots" aria-label="Link to heading 'Freezing all bots'" class="anchor"></a></h2>
+<p>To pause every bot of an organization at once, for example while you look
+into an incident, its owners freeze them with <strong>Freeze bots</strong> on the
+organization's <strong>Bots</strong> page, or through the API:</p>
+<pre tabindex="0"><code class="language-sh">curl -X PUT https://git.example.org/api/v1/orgs/acme/bot-freeze \
+  -H "Authorization: Bearer $TOKEN"     # an owner's token with user:write
+</code></pre>
+<p>While frozen, the organization's bots can't use their tokens or SSH keys
+and their pushes are refused, but nothing is revoked: <code>DELETE</code> on the same
+URL unfreezes them, and everything works as before. <code>GET</code> says whether
+they're frozen, since when, and by whom. Bots of individual people aren't
+covered by an organization's freeze. Freezes are audited (<code>bot.freeze</code>,
+<code>bot.unfreeze</code>).</p>
+<h2 id="how-bots-appear">How bots appear<a href="#how-bots-appear" aria-label="Link to heading 'How bots appear'" class="anchor"></a></h2>
+<p>A <strong>Bot</strong> badge follows a bot's name wherever Slath shows it: as the author
+of issues, merge requests, and comments, in reviews, review threads, the
+timeline, commit statuses, member and collaborator lists, and the audit
+log. A bot's profile says who owns it. Comments by bots are also marked as
+claims: Slath shows what a bot says, not that it's true.</p>
+<h3 id="commits-by-bots">Commits by bots<a href="#commits-by-bots" aria-label="Link to heading 'Commits by bots'" class="anchor"></a></h3>
+<p>Commits a bot pushes show as the bot, with its avatar and badge: the bot
+is their committer, and their author too, unless the author address is a
+person's confirmed address (a bot that rebases someone's work keeps them
+as the author). Commits with the bot's <strong>no-reply address</strong>
+(<code>&lt;bot&gt;@users.noreply.&lt;host&gt;</code>) show as the bot wherever they're pushed
+from. The bot's page shows the address and the command that sets it for
+the agent or CI that commits as the bot:</p>
+<pre tabindex="0"><code class="language-sh">git config user.email ci-bot@users.noreply.slath.example
+jj config set --repo user.email ci-bot@users.noreply.slath.example
+</code></pre>
+<p>Bots have no other email addresses.</p>
+<h2 id="what-a-bot-cant-do">What a bot can't do<a href="#what-a-bot-cant-do" aria-label="Link to heading 'What a bot can't do'" class="anchor"></a></h2>
+<ul>
+<li><strong>Sign in.</strong> A bot has no password, no session, no second factor, and
+no OpenID Connect link. The sign-in page refuses its name exactly as it
+refuses an unknown one.</li>
+<li><strong>Own organizations or create bots.</strong> Bots can be members of an
+organization but never its owners, and they can't create organizations
+or bots of their own.</li>
+<li><strong>Resolve a person's thread.</strong> A bot can't resolve or reopen a review
+thread a person started; it marks it addressed
+(<code>PUT …/merge-requests/{n}/threads/{id}/addressed</code>), and a person
+resolves it (see <a href="merge-requests.html#reviews">threads</a>). A bot may resolve
+the threads bots started.</li>
+</ul>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../user/settings.html">Previous: Appearance and time zone</a><a rel="next" href="../user/forks.html">Next: Forks</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html" aria-current="page">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

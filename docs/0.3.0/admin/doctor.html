@@ -1,0 +1,160 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Diagnosing an installation · Slath 0.3.0 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0">Version 0.3.0: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="diagnosing-an-installation">Diagnosing an installation<a href="#diagnosing-an-installation" aria-label="Link to heading 'Diagnosing an installation'" class="anchor"></a></h1>
+<p><code>slath doctor</code> checks an installation and says what's wrong and what to do
+about it. It changes nothing, needs no privileges beyond the service
+account's, contacts nothing but the instance's own public URL, and never
+prints secrets.</p>
+<pre tabindex="0"><code class="language-sh">sudo -u slath slath doctor                  # systemd
+docker compose exec slath slath doctor      # Compose
+slath doctor --output json                  # for monitoring
+</code></pre>
+<p>It exits with status 1 if any check failed; warnings don't change the
+status. The JSON output follows <code>docs/cli/doctor.schema.json</code>: <code>ok</code>, and a
+list of checks with <code>code</code>, <code>status</code> (<code>ok</code>, <code>warn</code>, <code>fail</code>), <code>detail</code>, and
+<code>fix</code>. The codes are stable; alert on them, not on the texts.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Checks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>config.invalid</code></td>
+<td>The configuration file loads</td>
+</tr>
+<tr>
+<td><code>config.deprecated</code></td>
+<td>No deprecated keys (<code>slath config migrate</code> rewrites them)</td>
+</tr>
+<tr>
+<td><code>git.version</code></td>
+<td>The configured Git exists and is new enough</td>
+</tr>
+<tr>
+<td><code>storage.writable</code></td>
+<td>The data directory is writable</td>
+</tr>
+<tr>
+<td><code>ssh.boundary</code></td>
+<td>The SSH login's group can reach the IPC socket and nothing else: not the data directory, the master key, or the database URL file</td>
+</tr>
+<tr>
+<td><code>db.unreachable</code></td>
+<td>PostgreSQL answers with the configured URL</td>
+</tr>
+<tr>
+<td><code>keys.unreadable</code></td>
+<td>The master key (and old keys) load</td>
+</tr>
+<tr>
+<td><code>disk.low</code></td>
+<td>Free space on the data directory's file system (warning below 15%, failure below 5% or 1 GiB)</td>
+</tr>
+<tr>
+<td><code>backup.none</code>, <code>backup.stale</code></td>
+<td>A backup exists in the backup directory and is at most a week old</td>
+</tr>
+<tr>
+<td><code>tzdb.stale</code></td>
+<td>The time zone database built into Slath isn't older than the host's (a warning: a newer host database means some zone's rules changed; Slath never uses the host's, so update Slath). <code>slath serve</code> logs the same warning at start</td>
+</tr>
+<tr>
+<td><code>schema.state</code></td>
+<td>The database schema matches this version (behind: a restart updates it)</td>
+</tr>
+<tr>
+<td><code>postgres.superuser</code></td>
+<td>Slath's database role isn't a superuser (warning): it should only own Slath's database</td>
+</tr>
+<tr>
+<td><code>update.*</code></td>
+<td>The update preflight, as in <code>slath upgrade --check</code>: PostgreSQL (a supported major version, and a warning if it lacks the latest security release Slath knows of) and extensions, Git, source version, required manual steps, configuration, data directory, upgrade lock</td>
+</tr>
+<tr>
+<td><code>tls.expiry</code>, <code>tls.trust</code>, <code>tls.unreachable</code></td>
+<td>For an <code>https</code> public URL: the certificate is valid for at least 14 more days and trusted by the public roots (a private CA gives a warning)</td>
+</tr>
+</tbody>
+</table></div>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../admin/backup.html">Previous: Backup and restore</a><a rel="next" href="../admin/email.html">Next: Email</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html" aria-current="page">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

@@ -1,0 +1,546 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Repos · Slath 0.3.0 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0">Version 0.3.0: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="repos">Repos</h1>
+<section class="api-op" aria-labelledby="list_repos">
+<h2 id="list_repos"><code>GET /api/v1/repos</code></h2>
+<p>Repositories the caller can see (public ones for anonymous callers).</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_repo">
+<h2 id="create_repo"><code>POST /api/v1/repos</code></h2>
+<p>Creates a repository (`repo:write`).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<p>Body: <code>NewRepo</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="api_import">
+<h2 id="api_import"><code>POST /api/v1/repos/import</code></h2>
+<p>Creates a repository and imports branches and tags into it in the
+background (`repo:write`). Poll the import&#39;s report for the result.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<p>Body: <code>NewImport</code></p>
+<dl class="api-responses">
+<dt><code>202</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_repo">
+<h2 id="get_repo"><code>GET /api/v1/repos/{ns}/{repo}</code></h2>
+<p>A repository.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>301</code></dt><dd>Renamed; follow Location</dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="update_repo">
+<h2 id="update_repo"><code>PATCH /api/v1/repos/{ns}/{repo}</code></h2>
+<p>Changes a repository&#39;s settings (admins, `repo:write`).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>UpdateRepo</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="delete_repo">
+<h2 id="delete_repo"><code>DELETE /api/v1/repos/{ns}/{repo}</code></h2>
+<p>Deletes a repository (admins, `repo:write`). It disappears at once and
+can be restored by a site administrator for a few days.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_blob">
+<h2 id="get_blob"><code>GET /api/v1/repos/{ns}/{repo}/blob/{ref}</code></h2>
+<p>A file&#39;s content at a ref (up to the instance&#39;s render limit).</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>ref</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>path</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_branches">
+<h2 id="list_branches"><code>GET /api/v1/repos/{ns}/{repo}/branches</code></h2>
+<p>Branches, newest first.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_collaborators">
+<h2 id="list_collaborators"><code>GET /api/v1/repos/{ns}/{repo}/collaborators</code></h2>
+<p>A repository&#39;s collaborators (admins).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="put_collaborator">
+<h2 id="put_collaborator"><code>PUT /api/v1/repos/{ns}/{repo}/collaborators/{user}</code></h2>
+<p>Adds a collaborator or changes their role (admins).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>user</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>PutCollaborator</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="delete_collaborator">
+<h2 id="delete_collaborator"><code>DELETE /api/v1/repos/{ns}/{repo}/collaborators/{user}</code></h2>
+<p>Removes a collaborator (admins).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>user</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_commits">
+<h2 id="list_commits"><code>GET /api/v1/repos/{ns}/{repo}/commits</code></h2>
+<p>History of a ref, optionally limited to a path.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>ref</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>path</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_commit">
+<h2 id="get_commit"><code>GET /api/v1/repos/{ns}/{repo}/commits/{oid}</code></h2>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>oid</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_commit_diff">
+<h2 id="get_commit_diff"><code>GET /api/v1/repos/{ns}/{repo}/commits/{oid}/diff</code></h2>
+<p>A commit with the files it changes (compared with its first parent).
+A commit&#39;s diff against its first parent, as plain text (`git diff`).</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>oid</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>413</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_commit_patch">
+<h2 id="get_commit_patch"><code>GET /api/v1/repos/{ns}/{repo}/commits/{oid}/patch</code></h2>
+<p>A commit as a patch mail, as plain text (`git format-patch`).</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>oid</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>413</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_fork">
+<h2 id="get_fork"><code>GET /api/v1/repos/{ns}/{repo}/fork</code></h2>
+<p>Whether a repository is a fork, of what, and whether copying finished.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_fork">
+<h2 id="create_fork"><code>POST /api/v1/repos/{ns}/{repo}/forks</code></h2>
+<p>Forks a repository into a namespace of yours (`repo:write`). Copying
+runs in the background; poll the fork&#39;s `/fork` until it&#39;s `done`.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>NewFork</code></p>
+<dl class="api-responses">
+<dt><code>202</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="api_report">
+<h2 id="api_report"><code>GET /api/v1/repos/{ns}/{repo}/import</code></h2>
+<p>The import report of a repository (administrators of it; 404 if it
+wasn&#39;t imported).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_deploy_keys">
+<h2 id="list_deploy_keys"><code>GET /api/v1/repos/{ns}/{repo}/keys</code></h2>
+<p>The repository&#39;s deploy keys (admins).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="add_deploy_key">
+<h2 id="add_deploy_key"><code>POST /api/v1/repos/{ns}/{repo}/keys</code></h2>
+<p>Adds a deploy key (admins). A key already in use by anyone is refused.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>NewDeployKey</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="remove_deploy_key">
+<h2 id="remove_deploy_key"><code>DELETE /api/v1/repos/{ns}/{repo}/keys/{id}</code></h2>
+<p>Removes a deploy key (admins).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_protections">
+<h2 id="list_protections"><code>GET /api/v1/repos/{ns}/{repo}/protections</code></h2>
+<p>A repository&#39;s branch protection rules (admins).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="post_protection">
+<h2 id="post_protection"><code>POST /api/v1/repos/{ns}/{repo}/protections</code></h2>
+<p>Creates the rule for a pattern, or replaces it (admins).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>PostProtection</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="delete_protection">
+<h2 id="delete_protection"><code>DELETE /api/v1/repos/{ns}/{repo}/protections/{id}</code></h2>
+<p>Removes a rule (admins).</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_sensitive_paths">
+<h2 id="get_sensitive_paths"><code>GET /api/v1/repos/{ns}/{repo}/sensitive-paths</code></h2>
+<p>Files bots can&#39;t change and merge requests need a maintainer&#39;s approval
+for: the built-in defaults and the repository&#39;s own globs.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="put_sensitive_paths">
+<h2 id="put_sensitive_paths"><code>PUT /api/v1/repos/{ns}/{repo}/sensitive-paths</code></h2>
+<p>Replaces the repository&#39;s own sensitive paths (admins); the defaults
+always apply. Audited.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>PutSensitivePaths</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="sync_fork">
+<h2 id="sync_fork"><code>POST /api/v1/repos/{ns}/{repo}/sync</code></h2>
+<p>Brings a fork&#39;s branch up to its parent&#39;s (`repo:write`): a
+fast-forward, or with `discard` a force update. Branch protection of the
+fork applies.</p>
+<p>Token scopes: <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>SyncBody</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_tags">
+<h2 id="list_tags"><code>GET /api/v1/repos/{ns}/{repo}/tags</code></h2>
+<p>Tags, newest first.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_tree">
+<h2 id="get_tree"><code>GET /api/v1/repos/{ns}/{repo}/tree/{ref}</code></h2>
+<p>The entries of a directory at a ref.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>ref</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>path</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="api_repos">
+<h2 id="api_repos"><code>GET /api/v1/search/repos</code></h2>
+<p>Repositories you can see whose name or description contains the query.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>q</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+</dl>
+</section>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../api/orgs.html">Previous: Orgs</a><a rel="next" href="../api/statuses.html">Next: Statuses</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html" aria-current="page">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

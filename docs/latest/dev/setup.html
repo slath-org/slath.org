@@ -1,0 +1,265 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Developer setup · Slath 0.3.0 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0">Version 0.3.0: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+
+<h1 id="developer-setup">Developer setup<a href="#developer-setup" aria-label="Link to heading 'Developer setup'" class="anchor"></a></h1>
+<p>This gets a clean Linux machine from zero to a green <code>just check</code>.</p>
+<h2 id="prerequisites">Prerequisites<a href="#prerequisites" aria-label="Link to heading 'Prerequisites'" class="anchor"></a></h2>
+<ul>
+<li>Rust via <a href="https://rustup.rs">rustup</a>. <code>rust-toolchain.toml</code> pins the version,
+and rustup installs it on first use.</li>
+<li>The newest stable Git release (currently 2.56.0); before 1.0 Slath
+requires it. <code>scripts/install-git.sh 2.56.0</code> builds it if your distribution
+lags behind, and <code>SLATH_TEST_GIT</code> points the tests at it.</li>
+<li>Python ≥ 3.11 (helper scripts and their tests).</li>
+<li>Node.js ≥ 22 (<code>web/.nvmrc</code> names the version CI uses) to build the UI
+bundle that the server embeds. It's needed at build time only.</li>
+<li>Docker (with the compose plugin) or Podman (with <code>podman compose</code>) for the
+development database.</li>
+</ul>
+<h2 id="steps">Steps<a href="#steps" aria-label="Link to heading 'Steps'" class="anchor"></a></h2>
+<pre tabindex="0"><code class="language-sh">cargo install --locked just     # once, if you don't have just yet
+just setup                      # installs cargo-nextest, cargo-deny, zizmor, sqlx-cli; creates .env
+just dev-db                     # starts PostgreSQL 18 on 127.0.0.1:54329
+just tools                      # installs the pinned jj versions for the compat tests
+just check                      # UI bundle, fmt, clippy, tests, cargo deny, guards, zizmor
+just test-e2e                   # browser tests (Playwright container, all browsers)
+</code></pre>
+<p><code>cargo install</code> puts binaries in <code>~/.cargo/bin</code>, which must be on <code>PATH</code>.</p>
+<p>The compatibility tests also need Docker (or Podman, via
+<code>SLATH_CONTAINER_ENGINE=podman</code>) for the SSH server fixture. Set
+<code>SLATH_SKIP_SSH_TESTS=1</code> or <code>SLATH_SKIP_JJ_TESTS=1</code> to skip those suites.</p>
+<h3 id="git-and-jj-clients">Git and jj clients<a href="#git-and-jj-clients" aria-label="Link to heading 'Git and jj clients'" class="anchor"></a></h3>
+<p><code>tests/compat/versions.toml</code> pins the client versions with their SHA-256:
+the newest stable Git, and the current jj release plus the previous two.
+The compatibility tests use <code>$SLATH_TEST_GIT</code> (default <code>/usr/bin/git</code>) and
+every jj in <code>$SLATH_TEST_JJ</code> (colon-separated paths; default: the ones
+<code>just tools</code> installed). <code>scripts/install-git.sh &lt;version&gt;</code> builds a pinned
+Git; <code>scripts/install-jj-latest.sh</code> installs the latest jj release, checked
+against the digest GitHub publishes for it.</p>
+<p>The nightly workflow <code>.github/workflows/compat-matrix.yml</code> runs the whole
+client suite with the pinned Git, every pinned jj, and the latest jj
+release. It compares Slath's predicted jj IDs with each real jj binary,
+and runs a jj without <code>change-id</code> headers, mixed Git and jj teams, every
+merge request flow for Git-made, jj-made, and mixed stacks, forks, and
+tag pushes. Its report (<code>scripts/compat_report.py</code>) names each client and
+marks a jj release that isn't pinned yet. A red nightly or manual run opens or
+comments on the issue labeled <code>compat-matrix</code> and blocks the next release;
+the next green run closes it. When a new jj release passes, pin it in
+<code>versions.toml</code> and drop the oldest.</p>
+<h2 id="documentation">Documentation<a href="#documentation" aria-label="Link to heading 'Documentation'" class="anchor"></a></h2>
+<p><code>docs/user</code>, <code>docs/admin</code>, <code>docs/cli</code>, <code>docs/dev</code>, and the OpenAPI
+document are the documentation every binary serves at <code>/-/docs/</code>, built
+with the theme in <code>docs/theme/</code>. Planning documents (<code>docs/spec</code>,
+<code>docs/plan</code>, and the others) are never part of it. Links between
+documents use relative <code>.md</code> paths (<code>../user/webhooks.md#events</code>); a link
+to a missing document or heading fails <code>just check</code>. To look at the
+output as static files:</p>
+<pre tabindex="0"><code class="language-sh">cargo run -p slath -- docs build --out target/docs
+</code></pre>
+<h2 id="configuration">Configuration<a href="#configuration" aria-label="Link to heading 'Configuration'" class="anchor"></a></h2>
+<p><code>.env</code> (copied from <code>.env.example</code>, ignored by Git) sets <code>DATABASE_URL</code> for
+tests and <code>sqlx</code>. To use another port, set <code>SLATH_DEV_DB_PORT</code> before
+<code>just dev-db</code> and adjust <code>DATABASE_URL</code> to match.</p>
+<p>To use Podman instead of Docker when both are installed, set
+<code>SLATH_CONTAINER_ENGINE=podman</code>.</p>
+<h2 id="useful-recipes">Useful recipes<a href="#useful-recipes" aria-label="Link to heading 'Useful recipes'" class="anchor"></a></h2>
+<div class="docs-table" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th>Recipe</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>just test -E 'test(name)'</code></td>
+<td>Run matching tests (any nextest filter works)</td>
+</tr>
+<tr>
+<td><code>just test -p slath-git</code></td>
+<td>Run one crate's tests</td>
+</tr>
+<tr>
+<td><code>just fmt</code></td>
+<td>Format all code</td>
+</tr>
+<tr>
+<td><code>just web</code></td>
+<td>Rebuild the UI bundle after changing <code>web/src</code></td>
+</tr>
+<tr>
+<td><code>just test-e2e -g name</code></td>
+<td>Run matching browser tests; <code>E2E_LOCAL=1</code> runs Playwright without its container</td>
+</tr>
+<tr>
+<td><code>just css-lint</code></td>
+<td>Check CSS against the design-token rules</td>
+</tr>
+<tr>
+<td><code>just hooks</code></td>
+<td>Use the optional pre-commit hook: audits the workflows with zizmor when a commit changes <code>.github/</code></td>
+</tr>
+<tr>
+<td><code>just test-backup-restore</code></td>
+<td>Run the backup and restore drill</td>
+</tr>
+<tr>
+<td><code>docker build -t slath:test . &amp;&amp; just test-compose</code></td>
+<td>Install with Docker Compose as the guide says, then render every page offline</td>
+</tr>
+<tr>
+<td><code>just schema-fixture</code></td>
+<td>Write the release schema and data fixture</td>
+</tr>
+<tr>
+<td><code>just dev-mail</code></td>
+<td>Start a mail catcher: SMTP on <code>127.0.0.1:1025</code> (<code>tls = "none"</code>), inbox at <a href="http://127.0.0.1:8025">http://127.0.0.1:8025</a></td>
+</tr>
+<tr>
+<td><code>just dev-db-stop</code></td>
+<td>Stop PostgreSQL, keeping its data</td>
+</tr>
+<tr>
+<td><code>just dev-db-reset</code></td>
+<td>Delete the development database volume</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="web-ui">Web UI<a href="#web-ui" aria-label="Link to heading 'Web UI'" class="anchor"></a></h2>
+<p>The UI is rendered on the server (Askama templates in
+<code>crates/http/templates</code>), with htmx and small TypeScript islands from
+<code>web/src</code>. Every page works without JavaScript; scripts only add
+conveniences on top.</p>
+<p>Browser support:</p>
+<ul>
+<li>Use Baseline Widely available HTML, CSS, and JavaScript features freely.</li>
+<li>Use Newly available or limited features only as progressive enhancement
+(the page still works where they're missing, as with <code>field-sizing</code> or
+<code>text-wrap</code>) or with a fallback: a polyfill from npm, bundled and loaded
+with a dynamic <code>import()</code> only after feature detection, or a small
+fallback of our own.</li>
+<li>Prefer HTML and CSS solutions to JavaScript ones.</li>
+<li>Bundled third-party code is listed in <code>THIRD-PARTY-NOTICES.md</code>.</li>
+</ul>
+<h3 id="layout-and-components">Layout and components<a href="#layout-and-components" aria-label="Link to heading 'Layout and components'" class="anchor"></a></h3>
+<p>Pages are built from the components of the design catalog, which a
+debug build serves at <code>/-/design</code>: one page per family (for example
+<code>/-/design/layout</code>), each component with its status, its contract
+(purpose, markup, variants and states, accessibility, and what it's not
+for), and examples of every variant.</p>
+<p>Space between components comes only from the layout components
+(<code>web/src/components/layout.css</code>): a stack places its children at one of
+four distances, set by the tokens <code>--gap-inside</code>, <code>--gap-items</code>,
+<code>--gap-groups</code>, and <code>--gap-sections</code>, which compact density makes one step
+smaller. Components set no outer margins of their own. Widths come from
+tokens too (<code>--measure-form</code>, <code>--measure-text</code>, <code>--measure-narrow</code>,
+<code>--details-width</code>). To change a token, edit <code>web/src/tokens.json</code> and run
+<code>just tokens</code>.</p>
+<p>A new or changed component comes with its contract and catalog entry in
+the same change.</p>
+<p><code>just guards</code> checks the templates against the rules
+(<code>scripts/check_weave.py</code>): every <code>&lt;details&gt;</code> is a disclosure, menu,
+popover, or reply box; heading levels never skip; two or more fields in a
+<code>fieldset</code> make a group of fields; no inline styles; every class a page
+uses is shown in the catalog, and every catalog entry is used by a page.
+Pages not yet built from the components are listed in
+<code>scripts/weave-allowlist.txt</code>; the list only shrinks, so moving a page
+means removing its lines, and the check fails on a line that no longer
+applies.</p>
+<p>The browser tests measure the same rules on the rendered pages
+(<code>tests/e2e/tests/weave.spec.ts</code>): on every catalog page, gaps inside the
+layout components are the relationship distances in both densities,
+headings have more space above than below, and every disclosure shows a
+chevron that turns. One page per page group is checked for indicators and
+heading levels against <code>tests/e2e/weave-baseline.json</code>, which lists what
+pages not yet built from the components still break; it only shrinks too.</p>
+<p>The browser tests run in Chromium, Firefox, and WebKit, each in light and
+dark, on a desktop and on a phone, but each test only where what it checks
+can differ (<code>tests/e2e/playwright.config.ts</code>). Behavior tests run in every
+engine on the desktop and in Chromium and WebKit on the phone, in the
+light theme. The layout specs (<code>weave</code>, <code>appearance</code>, <code>design*</code>) run in
+every engine and size. What the color theme changes runs in all twelve
+cells: <code>contrast.spec.ts</code> checks every page in <code>tests/e2e/tests/pages.ts</code>
+with axe, and <code>design-people.spec.ts</code> the generated avatars. A new page
+goes into <code>pages.ts</code>; a test about appearance goes into one of those
+specs, so it runs where it matters. Tests find elements by role and name
+and check what happens, not the wording of a page.</p>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../cli/index.html">Previous: JSON output of slath commands</a><a rel="next" href="../dev/upgrades.html">Next: Keeping upgrades safe</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html" aria-current="page">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

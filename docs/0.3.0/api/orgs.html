@@ -1,0 +1,197 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Orgs · Slath 0.3.0 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0">Version 0.3.0: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="orgs">Orgs</h1>
+<section class="api-op" aria-labelledby="list_orgs">
+<h2 id="list_orgs"><code>GET /api/v1/orgs</code></h2>
+<p>Organizations the authenticated user belongs to.</p>
+<p>Token scopes: <code>user:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_org">
+<h2 id="create_org"><code>POST /api/v1/orgs</code></h2>
+<p>Creates an organization; the caller becomes its owner (`user:write`).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<p>Body: <code>NewOrg</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_org">
+<h2 id="get_org"><code>GET /api/v1/orgs/{org}</code></h2>
+<p>An organization&#39;s profile (public).</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="update_org">
+<h2 id="update_org"><code>PATCH /api/v1/orgs/{org}</code></h2>
+<p>Changes an organization&#39;s profile (owners, `user:write`).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>UpdateOrg</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_members">
+<h2 id="list_members"><code>GET /api/v1/orgs/{org}/members</code></h2>
+<p>An organization&#39;s members (members only).</p>
+<p>Token scopes: <code>user:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_member">
+<h2 id="get_member"><code>GET /api/v1/orgs/{org}/members/{user}</code></h2>
+<p>One member&#39;s role (members only).</p>
+<p>Token scopes: <code>user:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>user</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="put_member">
+<h2 id="put_member"><code>PUT /api/v1/orgs/{org}/members/{user}</code></h2>
+<p>Adds a member or changes their role (owners, `user:write`).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>user</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>PutMember</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="delete_member">
+<h2 id="delete_member"><code>DELETE /api/v1/orgs/{org}/members/{user}</code></h2>
+<p>Removes a member, or leaves (`user:write`). The last owner can&#39;t leave.</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>user</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+</dl>
+</section>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../api/meta.html">Previous: Meta</a><a rel="next" href="../api/repos.html">Next: Repos</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html" aria-current="page">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

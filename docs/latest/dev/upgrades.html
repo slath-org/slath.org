@@ -1,0 +1,153 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Keeping upgrades safe · Slath 0.3.0 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0">Version 0.3.0: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="keeping-upgrades-safe">Keeping upgrades safe<a href="#keeping-upgrades-safe" aria-label="Link to heading 'Keeping upgrades safe'" class="anchor"></a></h1>
+<p>Every release must upgrade directly from every earlier release of the same
+major version, back to the upgrade baseline 0.3.0. These rules keep that
+true. The 0.1/0.2 previews are no upgrade source: their databases (schema
+below 100) are refused with guidance, and nothing in the code exists only
+for them.</p>
+<h2 id="upgrade-notes">Upgrade notes<a href="#upgrade-notes" aria-label="Link to heading 'Upgrade notes'" class="anchor"></a></h2>
+<p>Each release has <code>upgrade-notes/&lt;version&gt;.toml</code>. The binary embeds the
+files and <code>slath upgrade --check</code> prints those between the installed and
+the new version. <code>just upgrade-notes</code> checks that every release tag has its
+file; the release workflow also checks the file of the tag being released.</p>
+<pre tabindex="0"><code class="language-toml">version = "0.5.0"
+schema_version = 58          # REQUIRED_SCHEMA of the release
+min_upgrade_from = "0.3.0"
+
+[requires]                   # optional: raised minimum versions
+git = "2.47.0"
+postgres = "16"
+
+[[action]]                   # manual steps
+id = "runner-upgrade"
+severity = "required"        # required: containers refuse to auto-upgrade
+text = "Upgrade CI runners to 0.5.0 or later"
+
+[[background_migration]]
+name = "mr_change_patch_ids"
+impact = "Merge request interdiffs show 'computing' until it finishes"
+
+[[deprecation]]
+config_key = "ci.max_parallel"
+replacement = "ci.max_concurrent_per_repo"
+removal = "2.0.0"
+</code></pre>
+<p>Unknown keys are errors. Add to the in-development release's file as you
+go; the release task completes it.</p>
+<h2 id="renaming-a-configuration-key">Renaming a configuration key<a href="#renaming-a-configuration-key" aria-label="Link to heading 'Renaming a configuration key'" class="anchor"></a></h2>
+<ol>
+<li>Rename the field in <code>crates/core/src/config.rs</code>.</li>
+<li>Add an entry to <code>DEPRECATED_KEYS</code> there (old and new dotted path, the
+release that deprecates it, and the major release that may remove it).</li>
+<li>Add a matching <code>[[deprecation]]</code> to the release's upgrade notes (a unit
+test fails otherwise).</li>
+</ol>
+<p>Loading maps the old key with a warning, and <code>slath config migrate</code>
+rewrites files. The shipped configurations of every release since 0.3.0
+are kept in <code>tests/fixtures/config/</code> (the release task adds them) and must
+keep loading.</p>
+<h2 id="schema-changes">Schema changes<a href="#schema-changes" aria-label="Link to heading 'Schema changes'" class="anchor"></a></h2>
+<p>See the migration rules in the data model specification: fast DDL only,
+expand and contract over two releases, and backfills as background
+migrations.</p>
+<p><code>migrations/0100_baseline.sql</code> is the schema of the previews collapsed into
+one file, and every supported installation starts there. New migrations
+take the next number after the newest file (0101, 0102, …) and set
+<code>schema_info.version</code> to it; <code>REQUIRED_SCHEMA</code> in <code>crates/db/src/lib.rs</code> is
+that number.</p>
+<h2 id="testing-upgrades">Testing upgrades<a href="#testing-upgrades" aria-label="Link to heading 'Testing upgrades'" class="anchor"></a></h2>
+<ul>
+<li><code>tests/ops/upgrade.rs</code> loads fixtures from <code>tests/fixtures/schema/</code> and
+upgrades them: <code>baseline.sql</code> (data at the baseline schema, until a
+release since 0.3.0 has its own <code>v&lt;version&gt;.sql</code>) and every release
+fixture. <code>preview/v0.2.0.sql</code> checks that previews are refused.</li>
+<li><code>just upgrade-matrix</code> builds every release since 0.3.0 from its tag and
+upgrades an instance each of them populated. Without such a release, it
+reports the case as N/A. <code>SLATH_UPGRADE_FAULT=&lt;step&gt;</code> makes <code>slath upgrade</code>
+abort at a step (<code>after-maintenance</code>, <code>after-backup</code>,
+<code>after-first-migration</code>, <code>after-migrations</code>, <code>after-hooks</code>), as a kill
+would; the tests then run it again and check the result.</li>
+<li>Changing the per-repository Git config: edit <code>REPO_CONFIG</code> and bump
+<code>REPO_CONFIG_VERSION</code> in <code>crates/git/src/storage.rs</code>. A background
+migration named <code>repo_config_v&lt;N&gt;</code> re-applies it to existing repositories.</li>
+</ul>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../dev/setup.html">Previous: Developer setup</a><a rel="next" href="../dev/releasing.html">Next: Releasing</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html" aria-current="page">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

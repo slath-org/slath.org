@@ -1,0 +1,149 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Setting up an instance from a file · Slath 0.3.0 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0">Version 0.3.0: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="setting-up-an-instance-from-a-file">Setting up an instance from a file<a href="#setting-up-an-instance-from-a-file" aria-label="Link to heading 'Setting up an instance from a file'" class="anchor"></a></h1>
+<p><code>slath admin apply FILE</code> creates users, organizations, bots, repositories,
+and tokens from a TOML file. It's meant for scripted setups: a test or
+demo instance, an instance for AI agents, or the first accounts of a new
+installation.</p>
+<pre tabindex="0"><code class="language-sh">slath admin apply seed.toml
+slath admin apply seed.toml --output json
+</code></pre>
+<p>Applying is <strong>idempotent</strong>: whatever already exists is left as it is, and
+only what's missing is created, so running the same file again reports
+<code>0 changes</code>. Nothing is ever deleted or renamed. If an entry can't be
+applied, <code>apply</code> stops with an error; what it applied before that stays,
+and running it again after fixing the file picks up from there.</p>
+<p>Each change is recorded in the audit log, as an action of the account
+that owns what was created (a repository by its namespace's owner), plus
+one <code>admin.apply</code> entry.</p>
+<h2 id="the-file">The file<a href="#the-file" aria-label="Link to heading 'The file'" class="anchor"></a></h2>
+<pre tabindex="0"><code class="language-toml">[[users]]
+username = "ada"
+email = "ada@example.org"
+admin = true                          # site administrator (default false)
+password_file = "secrets/ada-password"
+
+[[orgs]]
+name = "acme"
+owners = ["ada"]                      # at least one; the first creates it
+members = []
+
+[[bots]]
+name = "acme-agent"
+owner = "acme"                        # a user or an organization
+
+[[repos]]
+namespace = "acme"
+name = "app"
+visibility = "private"                # public, internal, or private (default)
+default_branch = "main"               # default main
+collaborators = { "acme-agent" = "write" }
+
+[[tokens]]
+name = "agent"
+bot = "acme-agent"                    # or user = "ada"
+scopes = ["repo:write", "mrs:write"]
+repos = ["acme/app"]                  # required for bots
+days = 30                             # optional
+file = "secrets/bot-token"
+</code></pre>
+<p>Paths are relative to the file. Unknown keys are errors.</p>
+<ul>
+<li><strong>Users</strong> are created once. With <code>password_file</code>, the password is read
+from that file if it exists; otherwise one is generated and written
+there. Without <code>password_file</code>, a generated password is printed once.</li>
+<li><strong>Organizations</strong> get the listed owners and members that aren't in
+them yet. People already in an organization keep their role.</li>
+<li><strong>Bots</strong> are created for their owner. A bot of the same name with
+another owner is an error.</li>
+<li><strong>Repositories</strong> are created by their namespace's owner (for an
+organization, its first owner). Listed collaborators get the given role,
+also when they had another one.</li>
+<li><strong>Tokens</strong> follow the rules for <a href="../user/bots.html#tokens">bot tokens</a> or
+personal tokens (people's tokens never expire unless <code>days</code> is given,
+and only site administrators get <code>admin</code>). A token is created when its
+account has no active token of that name, or when its <code>file</code> is
+missing; the token it replaces is revoked.</li>
+</ul>
+<p>Passwords and tokens are written only to their files, with mode 0600
+(directories 0700), and never appear in the output. Keep these files
+somewhere only the people and agents who need them can read.</p>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../admin/secrets.html">Previous: Secrets and the master key</a><a rel="next" href="../admin/upgrading.html">Next: Upgrading Slath</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html" aria-current="page">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Accounts and sign-in · Slath 0.3.0 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0">Version 0.3.0: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="accounts-and-sign-in">Accounts and sign-in<a href="#accounts-and-sign-in" aria-label="Link to heading 'Accounts and sign-in'" class="anchor"></a></h1>
+<h2 id="registration">Registration<a href="#registration" aria-label="Link to heading 'Registration'" class="anchor"></a></h2>
+<p><code>[auth] registration</code> decides who can create accounts:</p>
+<ul>
+<li><code>disabled</code> (default): only administrators, with <code>slath admin create-user</code> or under <strong>Administration → Users</strong>. <code>/-/register</code> doesn't
+exist.</li>
+<li><code>invite</code>: people with an invitation link. Administrators create links
+under <strong>Administration → Invitations</strong>; a link works once, for 7 days, and
+can be revoked. A link bound to an email address requires that address,
+which then counts as confirmed (and, with email configured, the link is
+sent to it).</li>
+<li><code>open</code>: anyone can register on the sign-in page. With email configured,
+new accounts must confirm their address before they can create
+repositories or organizations.</li>
+</ul>
+<p>Registrations are limited to 5 per IP address per 15 minutes.</p>
+<h2 id="email-addresses-and-password-resets">Email addresses and password resets<a href="#email-addresses-and-password-resets" aria-label="Link to heading 'Email addresses and password resets'" class="anchor"></a></h2>
+<p>With <a href="email.html">email</a> configured, each new account's address gets a
+confirmation link (valid for 48 hours). Users change their address under
+<strong>Settings → Profile</strong>; the new address is unconfirmed until its link is
+used, and the old address is told about the change.</p>
+<p><strong>Forgot your password?</strong> on the sign-in page sends a reset link to a
+confirmed address. The answer is the same whether or not an account has the
+address. A link is valid for 30 minutes and works once; at most three are
+sent per account and hour. Setting a new password signs out every session
+of the account. Accounts with two-factor authentication must also enter a
+code (or a recovery code) to reset the password.</p>
+<p>Without email, the sign-in page asks users to contact an administrator.</p>
+<h2 id="signing-in-with-openid-connect">Signing in with OpenID Connect<a href="#signing-in-with-openid-connect" aria-label="Link to heading 'Signing in with OpenID Connect'" class="anchor"></a></h2>
+<p>People can sign in with an OpenID Connect provider (Keycloak, Dex,
+Authentik, Google Workspace, Microsoft Entra ID, …). Register Slath as a
+confidential client with the redirect URI
+<code>&lt;public_url&gt;/-/login/oidc/&lt;key&gt;/callback</code>, then add the provider:</p>
+<pre tabindex="0"><code class="language-toml">[[auth.oidc]]
+key = "company"                 # used in URLs
+display_name = "Company login"  # shown on the sign-in button
+issuer = "https://id.example.com/realms/main"   # must equal the tokens' iss
+client_id = "slath"
+client_secret_file = "/etc/slath/oidc-company.secret"
+# scopes = ["openid", "email", "profile"]
+# allow_registration = false    # create accounts at first sign-in
+# trust_email = false           # see below
+# counts_as_mfa = false         # sign-ins satisfy second-factor requirements
+</code></pre>
+<ul>
+<li>Slath uses the Authorization Code flow with PKCE, a single-use <code>state</code>
+that expires after ten minutes and only works in the browser that
+started the sign-in, and a <code>nonce</code>. ID tokens must be signed with RS256,
+ES256, or EdDSA by a key from the provider's key set (never <code>none</code>), and
+<code>iss</code>, <code>aud</code>, <code>azp</code>, <code>exp</code>, <code>iat</code>, and <code>nonce</code> are checked. Discovery and
+keys are fetched from the issuer and kept for a day; the provider must
+use HTTPS (plain HTTP is accepted only for a provider on the same
+machine, for testing).</li>
+<li>An account is linked to a provider identity by issuer and subject, never
+by email. People link a provider under <strong>Settings → Security</strong> after
+confirming their password; unlinking needs the same.</li>
+<li>At the first sign-in with an unknown identity, <code>allow_registration</code>
+lets the person create an account by choosing a username. If the
+provider's verified email belongs to an existing account and
+<code>trust_email</code> is on, Slath doesn't link it; it tells the person to sign
+in to that account and link the provider there.</li>
+<li>Accounts with two-factor authentication still enter a code after an
+OIDC sign-in unless the provider has <code>counts_as_mfa = true</code>. Suspended
+accounts can't sign in this way either.</li>
+<li>Profile pictures from the provider are never loaded.</li>
+</ul>
+<h2 id="two-factor-authentication">Two-factor authentication<a href="#two-factor-authentication" aria-label="Link to heading 'Two-factor authentication'" class="anchor"></a></h2>
+<p>Users turn on two-factor authentication under <strong>Settings → Security</strong>: they
+scan a QR code with an authenticator app (or type the setup key), confirm
+with a code, and get 10 single-use recovery codes. From then on, signing in
+and confirming sensitive actions need a 6-digit code (or a recovery code)
+besides the password.</p>
+<ul>
+<li>A code works once. Codes from the previous and next 30-second step are
+accepted, for clocks that are slightly off.</li>
+<li>Five wrong codes end the sign-in attempt; failures also count toward the
+account's sign-in limit.</li>
+<li>Turning two-factor authentication off needs the password and a code.
+Users get an email when it's turned on or off and when a recovery code is
+used to sign in (if email is configured).</li>
+</ul>
+<h3 id="passkeys">Passkeys<a href="#passkeys" aria-label="Link to heading 'Passkeys'" class="anchor"></a></h3>
+<p>Under <strong>Settings → Security</strong>, users add passkeys: the device's screen lock
+(fingerprint, face, PIN) or a security key. A passkey signs in on its own
+(<strong>Sign in with a passkey</strong>), works as the second step after the password,
+and confirms sensitive actions. Every passkey must verify the user, so it
+counts as two-factor authentication.</p>
+<p>Passkeys need <code>server.public_url</code> to use a host name (not an IP address)
+and, except for <code>localhost</code>, HTTPS. Without that, the passkey options are
+hidden. The relying party ID is the host of <code>public_url</code>, and only that
+exact origin is accepted.</p>
+<h3 id="administrators">Administrators<a href="#administrators" aria-label="Link to heading 'Administrators'" class="anchor"></a></h3>
+<p>With <code>[auth] require_mfa_for_admins = true</code> (the default), administrator
+powers apply only when the administrator signed in with a second factor,
+and to tokens and SSH keys only if the account has one. Until then, an
+administrator is treated like a regular user, and the pages show a notice
+explaining what to do.</p>
+<h3 id="lost-devices">Lost devices<a href="#lost-devices" aria-label="Link to heading 'Lost devices'" class="anchor"></a></h3>
+<p>A user who lost their authenticator signs in with a recovery code. Without
+one, an administrator removes their second factors:</p>
+<pre tabindex="0"><code class="language-sh">slath admin reset-mfa --username alice
+</code></pre>
+<p>This also signs the user out everywhere. It's recorded in the audit log, and
+the user gets an email. They then sign in with their password and set up
+two-factor authentication again.</p>
+<h3 id="email-addresses">Email addresses<a href="#email-addresses" aria-label="Link to heading 'Email addresses'" class="anchor"></a></h3>
+<p>An account can have several email addresses and chooses one of them as
+primary under <em>Settings → Email addresses</em>. Password resets and
+notifications go to the primary address; commits with any confirmed
+address show as the account, with its avatar. Each address counts only
+once it's confirmed through the link Slath emails to it, and a confirmed
+address belongs to one account. Only a confirmed address can become
+primary, and the primary address can only be removed when it's the last
+one. An account has at most <code>limits.emails_per_account</code> (10) addresses.</p>
+<p>Without email, the links can't be sent: an administrator confirms an
+address for the account instead (it becomes primary if the account has
+none). This is recorded in the audit log. Bot accounts have no email
+addresses, and the command refuses them.</p>
+<pre tabindex="0"><code class="language-sh">slath admin add-email --username alice --email alice@work.example
+</code></pre>
+<h2 id="organizations-and-teams">Organizations and teams<a href="#organizations-and-teams" aria-label="Link to heading 'Organizations and teams'" class="anchor"></a></h2>
+<p>A user's role on a repository is the highest of everything that grants
+one: being a collaborator, being in a team with access, owning the
+organization (admin), every member's default access (none or read),
+owning the namespace (admin), and site administration (admin). Removing
+any grant takes effect on the next request.</p>
+<ul>
+<li><strong>Teams:</strong> organization owners create teams under the organization's
+<strong>Teams</strong> page and add organization members. A repository's
+administrators give a team of the same organization a role under
+<strong>Settings → Access</strong>. Leaving the organization also removes a user
+from its teams; deleting a team ends the access it gave.</li>
+<li><strong>Member policies</strong> (organization <strong>Settings</strong>): the access every member
+gets (none, or read for every repository), and <strong>Require two-factor
+authentication</strong>. With the requirement, members and collaborators
+without a second factor lose access to the organization's repositories
+until they set one up (public repositories stay readable).</li>
+</ul>
+<h2 id="bots">Bots<a href="#bots" aria-label="Link to heading 'Bots'" class="anchor"></a></h2>
+<p>Bots are accounts for automation and AI agents, owned by a person or an
+organization (<a href="../user/bots.html">Bots</a>). They never sign in and work only
+through the tokens and SSH keys their owner gives them. These settings
+apply to all of them:</p>
+<pre tabindex="0"><code class="language-toml">[auth]
+bot_token_default_days = 30   # validity of a new bot token
+bot_token_max_days = 90       # the longest validity an owner can choose
+
+[limits]
+bot_requests_per_hour = 2000  # API requests per bot and hour
+</code></pre>
+<p>To create a bot and a token on the server, for example while setting up an
+instance for agents:</p>
+<pre tabindex="0"><code class="language-sh">slath admin create-bot --owner alice --name alice-ci \
+  --token-scopes repo:write,mrs:write --repo alice/app --output json
+</code></pre>
+<p>The token is printed once. The owner can see and revoke it later.</p>
+<p>To set up several accounts, bots, repositories, and tokens at once, and
+repeatably, use a bootstrap file with <code>slath admin apply</code>
+(<a href="bootstrap.html">Setting up an instance from a file</a>).</p>
+<p>Suspending a person under <strong>Administration → Users</strong> also suspends their
+bots; reactivating the person reactivates those bots. Bots suspended on
+their own stay suspended, and can't be reactivated while their owner is
+suspended. Each suspension's audit entry counts the bots it affected.</p>
+<p><code>slath admin bot stop NAME</code> stops a bot at once, without signing in: it's
+suspended, its tokens are revoked, its SSH keys removed, and its pushes
+refused. <code>slath admin bot start NAME</code> re-enables a stopped bot without
+credentials. Owners and organization owners can do the same through the
+API (see <a href="../user/bots.html#stopping-a-bot">Bots</a>); reactivating a bot under
+<strong>Administration → Users</strong> also ends its stop.</p>
+<p><strong>Administration → Bots</strong> lists every bot with its owner, state, and
+activity (in every repository), with <strong>Stop</strong> and <strong>Re-enable</strong> for each,
+and <strong>Freeze bots</strong> for all of them. On the server, freeze them with
+<code>slath admin bot freeze</code> (or <code>PUT /api/v1/admin/bot-freeze</code> with a token
+that has the <code>admin</code> scope). Frozen bots can't use their tokens or SSH
+keys and their pushes are refused; nothing is revoked, and
+<code>slath admin bot unfreeze</code> restores access. <code>--org ORG</code> freezes only an
+organization's bots, as its owners can through the API.</p>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../user/agents.html">Previous: Working with AI agents</a><a rel="next" href="../admin/backup.html">Next: Backup and restore</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html" aria-current="page">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>
