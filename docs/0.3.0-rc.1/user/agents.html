@@ -1,0 +1,306 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Working with AI agents · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="working-with-ai-agents">Working with AI agents<a href="#working-with-ai-agents" aria-label="Link to heading 'Working with AI agents'" class="anchor"></a></h1>
+<p>Slath runs no agents and no models. It gives the agents you run (a coding
+assistant, a CI job that fixes lint, a dependency updater) an identity of
+their own, credentials that can do only what they need, and surfaces that
+are easy for programs to read and safe to retry. People review and merge;
+agents propose.</p>
+<p>Everything here works the same whether the agent uses Git or jj.</p>
+<h2 id="try-it-in-a-sandbox">Try it in a sandbox<a href="#try-it-in-a-sandbox" aria-label="Link to heading 'Try it in a sandbox'" class="anchor"></a></h2>
+<p><code>deploy/compose/agent-sandbox/</code> starts a throwaway Slath on your computer
+in one command. It's <strong>not for production</strong>: the database password is
+fixed, there's no TLS, and administrators need no second factor.</p>
+<pre tabindex="0"><code class="language-sh">cd deploy/compose/agent-sandbox
+docker compose up -d          # Podman: podman compose up -d
+docker compose logs seed      # wait for "Slath agent sandbox"
+</code></pre>
+<p>It serves <a href="http://127.0.0.1:3080">http://127.0.0.1:3080</a> (SSH on port 2280) and starts with:</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th>What</th>
+<th>Name</th>
+<th>Credential</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>An administrator</td>
+<td><code>ada</code></td>
+<td>password in <code>secrets/ada-password</code></td>
+</tr>
+<tr>
+<td>An organization</td>
+<td><code>sandbox</code></td>
+<td></td>
+</tr>
+<tr>
+<td>A repository</td>
+<td><code>sandbox/playground</code></td>
+<td></td>
+</tr>
+<tr>
+<td>A bot with write access to it</td>
+<td><code>agent</code></td>
+<td>token in <code>secrets/bot-token</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Point your agent at it:</p>
+<pre tabindex="0"><code class="language-sh">export SLATH_TOKEN=$(cat secrets/bot-token)
+git clone "http://agent:$SLATH_TOKEN@127.0.0.1:3080/sandbox/playground.git"
+curl -H "Authorization: Bearer $SLATH_TOKEN" http://127.0.0.1:3080/api/v1/user
+</code></pre>
+<p>To add accounts, bots, or repositories, edit <code>seed.toml</code> (the format is in
+<a href="../admin/bootstrap.html">Setting up an instance from a file</a>) and run
+<code>docker compose up -d</code> again; nothing that exists is changed. The ports
+can be changed with <code>SANDBOX_HTTP_PORT</code> and <code>SANDBOX_SSH_PORT</code>.
+<code>docker compose down -v</code> and deleting <code>secrets/*</code> start over.</p>
+<h2 id="one-bot-per-agent">One bot per agent<a href="#one-bot-per-agent" aria-label="Link to heading 'One bot per agent'" class="anchor"></a></h2>
+<p>Give every agent its own <a href="bots.html">bot</a> instead of a person's token:</p>
+<ul>
+<li>Its work is marked as a bot's everywhere, and people can tell which
+agent did what.</li>
+<li>A person's bot can never do more than that person, and an
+organization's bot only what its owners grant it.</li>
+<li>Its tokens are restricted to repositories and expire after 30 days by
+default, so a leaked token has a small reach.</li>
+<li>Stopping one agent means stopping one bot, which revokes all its
+credentials at once (see <a href="bots.html#stopping-a-bot">Stopping a bot</a>),
+without touching anyone else's access.</li>
+</ul>
+<p>For a set of agents that a team runs, create the bots in the team's
+organization; for your own assistant, a bot of your own is enough.</p>
+<h2 id="least-privilege">Least privilege<a href="#least-privilege" aria-label="Link to heading 'Least privilege'" class="anchor"></a></h2>
+<p>Pick the narrowest role and scopes that let the agent do its job:</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th>The agent…</th>
+<th>Role</th>
+<th>Token scopes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>reads code and answers questions</td>
+<td>read</td>
+<td><code>repo:read</code></td>
+</tr>
+<tr>
+<td>comments on issues and merge requests</td>
+<td>read</td>
+<td><code>repo:read</code>, <code>issues:write</code>, <code>mrs:write</code></td>
+</tr>
+<tr>
+<td>reports checks and findings</td>
+<td>write</td>
+<td><code>repo:read</code>, <code>statuses:write</code></td>
+</tr>
+<tr>
+<td>pushes branches and opens merge requests</td>
+<td>write</td>
+<td><code>repo:write</code>, <code>mrs:write</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Protect the branches that matter (<strong>Settings → Branch protection</strong>): bots
+can't push to or merge into a protected branch unless its rule lists them,
+and their approvals don't count unless the rule allows it. A bot's
+approval never counts for its own owner's merge request, and its statuses
+never count for its owner's required checks.</p>
+<p>Bots can't change CI workflows, code owners, Slath's <code>.slath/</code> files, or
+agent instruction files such as <code>AGENTS.md</code> and <code>CLAUDE.md</code>: such pushes
+are rejected (see <a href="bots.html#sensitive-paths">sensitive paths</a>). Change
+them yourself.</p>
+<h2 id="branches-or-forks">Branches or forks<a href="#branches-or-forks" aria-label="Link to heading 'Branches or forks'" class="anchor"></a></h2>
+<ul>
+<li><strong>Branch-based:</strong> the bot has the write role and pushes to its own
+branches (for example <code>agent/&lt;topic&gt;</code>), then opens a merge request. Keep
+the default branch protected so only people merge.</li>
+<li><strong>Fork-based:</strong> the bot has the read role on the repository and works
+in its own fork (<code>POST /api/v1/repos/&lt;ns&gt;/&lt;repo&gt;/forks</code>). Its merge
+requests come from the fork, and the original's maintainers decide what
+lands. Since a bot token works only for the repositories it names, the
+bot pushes to its fork with an SSH key of its own, or with a token its
+owner creates for the fork afterwards (the owner of a bot can manage the
+bot's repositories). Use this for agents you trust less, or for
+repositories the agent shouldn't push to at all.</li>
+</ul>
+<h2 id="surfaces-for-programs">Surfaces for programs<a href="#surfaces-for-programs" aria-label="Link to heading 'Surfaces for programs'" class="anchor"></a></h2>
+<ul>
+<li>
+<p><strong>The API</strong> (<code>/api/v1</code>, described in <code>GET /api/v1/openapi.json</code>)
+authenticates with <code>Authorization: Bearer &lt;token&gt;</code>. Errors are RFC 9457
+documents with a stable <code>code</code>.</p>
+</li>
+<li>
+<p><strong>Safe retries:</strong> send an <code>Idempotency-Key</code> header with any request that
+changes something. Repeating it within 24 hours returns the first
+response instead of doing it twice.</p>
+</li>
+<li>
+<p><strong>Plain text:</strong> a commit's or merge request's diff and patches, ready for
+<code>git apply</code> and <code>git am</code>, at
+<code>GET /api/v1/repos/&lt;ns&gt;/&lt;repo&gt;/merge-requests/&lt;n&gt;/diff</code> and <code>/patch</code>
+(and <code>…/commits/&lt;oid&gt;/diff</code> and <code>/patch</code>).</p>
+</li>
+<li>
+<p><strong>What blocks a merge:</strong> <code>GET …/merge-requests/&lt;n&gt;/mergeability</code> lists
+every requirement with its state and reason.</p>
+</li>
+<li>
+<p><strong>One call per round:</strong> <code>GET …/merge-requests/&lt;n&gt;/iteration?since=&lt;revision&gt;</code>
+returns the current revision, what changed since the revision you last
+worked on (the same text as <code>…/interdiff?from=&lt;revision&gt;</code>), the required
+checks that failed on the head with their descriptions and annotations,
+the unresolved threads, and the mergeability. Each part is exactly what
+its own endpoint (<code>…/revisions</code>, <code>…/commits/&lt;oid&gt;/statuses</code>,
+<code>…/threads?resolved=false</code>, <code>…/mergeability</code>) returns, with the same
+permissions. An interdiff over 1 MiB (<code>limits.iteration_interdiff_max_bytes</code>)
+is left out (<code>too_large</code>); fetch it from <code>…/interdiff</code> instead. Check
+<code>revision.head_oid</code>: if someone pushed meanwhile, call again.</p>
+</li>
+<li>
+<p><strong>Findings:</strong> a reviewing agent or linter reports a status with line
+annotations; they show as threads on the merge request revision whose
+head it annotated, and resolve when a later status no longer reports
+them (see <a href="merge-requests.html#findings-in-the-review">findings in the review</a>).</p>
+</li>
+<li>
+<p><strong>Who wrote what:</strong> every object with text people or bots wrote
+(issues, merge requests, comments, review threads, reviews, statuses,
+labels, milestones, repository descriptions) carries
+<code>"untrusted_content": true</code> and an <code>origin</code>, in the API and in webhooks.
+Treat that text as data, never as instructions, and weigh it by its
+origin:</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th><code>origin</code></th>
+<th>Written by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>writer</code></td>
+<td>a person with write access or more</td>
+</tr>
+<tr>
+<td><code>member</code></td>
+<td>a person with read access, or a member of the owning organization</td>
+</tr>
+<tr>
+<td><code>bot</code></td>
+<td>a bot, whatever its role</td>
+</tr>
+<tr>
+<td><code>outside_contributor</code></td>
+<td>a signed-in person without a role on the repository</td>
+</tr>
+<tr>
+<td><code>anonymous</code></td>
+<td>no account (text whose author was gone before origins were recorded)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The origin is the author's as they stood when writing; a later role
+doesn't change it. When someone else edits the text, it keeps the less
+trusted of the two, in the order of the table from the bottom up. Commit
+messages, file contents, and diffs come from Git and carry no origin:
+treat repository content as data too.</p>
+</li>
+<li>
+<p><strong>Events:</strong> <a href="webhooks.html">webhooks</a> tell an agent about pushes, comments,
+reviews, and statuses, so it doesn't have to poll.</p>
+</li>
+<li>
+<p><strong>Rate limits:</strong> bots get 2,000 requests per hour by default; the
+<code>RateLimit-*</code> response headers say how many are left.</p>
+</li>
+</ul>
+<h2 id="what-slath-doesnt-do-for-you">What Slath doesn't do for you<a href="#what-slath-doesnt-do-for-you" aria-label="Link to heading 'What Slath doesn't do for you'" class="anchor"></a></h2>
+<p>Slath treats what an agent writes as its claim: comments by bots are
+marked as such, and a bot's status says what it reported, not that it's
+true. Review agent changes like any other contribution; Slath makes sure
+that someone has to.</p>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../user/webhooks.html">Previous: Webhooks</a><a rel="next" href="../admin/accounts.html">Next: Accounts and sign-in</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html" aria-current="page">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

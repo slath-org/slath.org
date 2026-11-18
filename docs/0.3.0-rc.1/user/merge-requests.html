@@ -1,0 +1,644 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Merge requests · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="merge-requests">Merge requests<a href="#merge-requests" aria-label="Link to heading 'Merge requests'" class="anchor"></a></h1>
+<p>A merge request asks to merge a branch into another branch of the same
+repository, usually the default branch. It works the same whether you use
+Git or jj, and it needs no hooks or client configuration.</p>
+<h2 id="working-with-git-or-jj">Working with Git or jj<a href="#working-with-git-or-jj" aria-label="Link to heading 'Working with Git or jj'" class="anchor"></a></h2>
+<p>Every step works the same with Git and with jj: nothing to install or
+configure beyond the repository's address and your credentials (an SSH
+key, or a personal access token from <strong>Settings → Access tokens</strong> as the
+HTTPS password). The commands below use <code>https://slath.example/alice/demo.git</code>;
+use your repository's address from <strong>Clone</strong>. Each pair shows the same
+step with Git, then with jj.</p>
+<p>Get the repository:</p>
+<pre tabindex="0"><code class="language-sh">git clone https://slath.example/alice/demo.git demo &amp;&amp; cd demo
+</code></pre>
+<pre tabindex="0"><code class="language-sh">jj git clone https://slath.example/alice/demo.git demo &amp;&amp; cd demo
+</code></pre>
+<p>Commit your work on a branch and push it. The push prints the link to
+open the merge request (see <a href="#opening-a-merge-request">Opening a merge request</a>):</p>
+<pre tabindex="0"><code class="language-sh">git switch -c my-topic
+git add -A &amp;&amp; git commit -m "Add notes"
+git push origin my-topic
+</code></pre>
+<pre tabindex="0"><code class="language-sh">jj commit -m "Add notes"
+jj bookmark create my-topic -r @-
+jj git push --bookmark my-topic
+</code></pre>
+<p>Update it after review by pushing again: each push is a new revision.
+Amending and rewriting are fine; the merge request follows each change
+across revisions:</p>
+<pre tabindex="0"><code class="language-sh">git add -A &amp;&amp; git commit --amend --no-edit
+git push --force-with-lease origin my-topic
+</code></pre>
+<pre tabindex="0"><code class="language-sh">jj squash --into my-topic
+jj git push --bookmark my-topic
+</code></pre>
+<p>When the target moved on, bring the branch up to date by rebasing it on
+the target and pushing (or use <a href="#updating-the-branch">Update branch</a> on
+the server). If the rebase stops at a conflict, resolve it and continue
+as the comment says:</p>
+<pre tabindex="0"><code class="language-sh">git fetch origin
+git rebase origin/main
+# On a conflict: resolve the files, then git add &lt;files&gt; &amp;&amp; git rebase --continue
+git push --force-with-lease origin my-topic
+</code></pre>
+<pre tabindex="0"><code class="language-sh">jj git fetch
+jj rebase -b my-topic -d main@origin
+# On a conflict: resolve it (jj resolve, or edit the files), then push
+jj git push --bookmark my-topic
+</code></pre>
+<p>After a change on the server (<strong>Update branch</strong>, applied suggestions, a
+maintainer's edit), take the new revision before you change more:</p>
+<pre tabindex="0"><code class="language-sh">git pull --rebase origin my-topic
+</code></pre>
+<pre tabindex="0"><code class="language-sh">jj git fetch
+</code></pre>
+<p>After the merge request is merged, continue from the updated target:</p>
+<pre tabindex="0"><code class="language-sh">git switch main &amp;&amp; git pull origin main
+</code></pre>
+<pre tabindex="0"><code class="language-sh">jj git fetch &amp;&amp; jj new main@origin
+</code></pre>
+<h2 id="opening-a-merge-request">Opening a merge request<a href="#opening-a-merge-request" aria-label="Link to heading 'Opening a merge request'" class="anchor"></a></h2>
+<p>Push a branch. Git (or jj) prints a link:</p>
+<pre tabindex="0"><code class="language-text">remote: slath: Create a merge request for my-topic:
+remote: slath:   https://slath.example/alice/demo/compare?source=my-topic
+</code></pre>
+<p>For an hour after the push, the repository's front page, its branch list,
+and the merge request list also show a "Recently pushed" banner with the
+same link.</p>
+<p>The link opens the compare page. It shows the commits and the changes of
+the branch against the target, and a form with:</p>
+<ul>
+<li><strong>Title</strong>: the commit message's first line if the branch has one commit,
+otherwise the branch name.</li>
+<li><strong>Description</strong>: the repository's template, if the target branch has a
+<code>.slath/merge_request_template.md</code>.</li>
+<li><strong>Reviewers</strong>, <strong>Assignees</strong>, <strong>Labels</strong>, and <strong>Milestone</strong>.</li>
+<li><strong>Create as draft</strong>: a draft can't be merged, and reviews are requested
+only once you mark it as ready.</li>
+</ul>
+<p>You can also pick the branches yourself under <strong>Merge requests → New merge
+request</strong>, or open a merge request through the API (<code>POST /api/v1/repos/{namespace}/{repo}/merge-requests</code>).</p>
+<p>To merge a branch of your fork into the original, see
+<a href="forks.html#merge-requests-from-a-fork">Merge requests from a fork</a>.</p>
+<p>Only one merge request can be open for the same source and target.
+Merge requests share their numbers with issues: <code>/{namespace}/{repo}/12</code>
+leads to issue 12 or merge request 12, whichever it is.</p>
+<h2 id="revisions">Revisions<a href="#revisions" aria-label="Link to heading 'Revisions'" class="anchor"></a></h2>
+<p>Every push to the source branch records a new revision, also after a
+rebase or an amended commit (<code>git push --force</code>, <code>jj git push</code>). The
+conversation lists each revision; <strong>Compare with previous</strong> shows what
+changed since the one before. After a rebase, that includes the changes
+that came from the target.</p>
+<p>Some merge requests can only be reviewed as a whole, for example when the
+branch contains merge commits. The timeline says so at the revision.</p>
+<p>The API lists them at <code>GET …/merge-requests/{n}/revisions</code>, oldest first,
+with each revision's head, base, merge base, commit count, and who pushed
+it.</p>
+<h2 id="changes">Changes<a href="#changes" aria-label="Link to heading 'Changes'" class="anchor"></a></h2>
+<p>Slath tracks each commit of a merge request as a <strong>change</strong>, so reviews
+can follow a commit through rebases, amends, and rewrites. The
+<strong>Commits</strong> tab of a merge request shows each commit's change ID. It uses jj's format: for
+commits made with jj, it's the ID <code>jj log</code> shows; for commits made with
+Git, it's the ID jj would give that commit. Nobody needs hooks, trailers,
+or any client configuration.</p>
+<p>When you push a new revision, Slath matches each commit to a change, in
+this order:</p>
+<ol>
+<li><strong>IDs.</strong> jj's <code>change-id</code> header, a <code>Change-Id:</code> trailer (as Gerrit
+tools write them), or the ID jj gives a Git commit. A Git commit that a
+jj user later edits keeps its change, because jj writes exactly that ID
+into the edited commit. IDs only count within the same merge request.</li>
+<li><strong>Identical patch.</strong> After a plain <code>git rebase</code>, the commits are new
+but their patches are the same.</li>
+<li><strong>Similar content.</strong> A commit without a known ID whose patch is close
+to a change that's no longer in the stack, for example a jj commit
+edited with <code>git rebase -i</code>. These are marked <strong>Inferred</strong>. They never
+carry approvals over, since the patch changed.</li>
+<li>Otherwise, a <strong>new</strong> change.</li>
+</ol>
+<p>Pushing to the source branch reports this right away, in the same form
+for <code>git push</code> and <code>jj git push</code>:</p>
+<pre tabindex="0"><code class="language-text">remote: slath: merge request !12 for my-topic, revision 3: https://slath.example/alice/demo/merge-requests/12
+remote: slath:   kxyzabcd unchanged          Add the parser
+remote: slath:   lmnopqrs updated (version 3) Handle empty input
+remote: slath:   nopqrstu new                Add a flag
+remote: slath:   zyxwvuts removed
+</code></pre>
+<p>If recording the revision takes longer than a few seconds, the push only
+prints the link, and the merge request updates a moment later.</p>
+<p>If two equally similar changes could fit, the commit becomes a new change
+and the Commits page says which ones it may continue. The timeline sums up
+each push, for example "rebased onto main, 2 changes modified, 1 added".</p>
+<p><strong>Unresolved commits</strong> block merging: a commit whose header and trailer
+name different changes, or two commits with the same ID. The author, or
+anyone who can push the source branch, picks a change for each of them on
+the Commits page. The choice is kept for the next pushes.</p>
+<p>Each change ID links to the change's page. It lists the change's versions
+and how each was matched (by its ID, by an identical patch, by similar
+content, or by hand), with the change's history, and compares any two
+versions:</p>
+<ul>
+<li><strong>Exact</strong>, when both versions have the same parent: the diff is
+exactly what changed between them.</li>
+<li><strong>Diff of patches</strong>, when the parents differ (after a rebase): the two
+patches are compared, so the rebase itself doesn't show. <strong>Tree diff,
+including the rebase</strong> shows everything that's different.</li>
+</ul>
+<p><strong>Compare with previous</strong> on a revision in the timeline compares two
+revisions with <code>git range-diff</code>. That's marked <strong>heuristic</strong>: it pairs
+commits by similarity and may pair them differently than the change IDs.
+The tree diff between both revisions is one link away. The API serves the
+same comparison as plain text at
+<code>GET …/merge-requests/{n}/interdiff?from=&lt;revision&gt;&amp;to=&lt;revision&gt;</code> (<code>to</code>
+defaults to the current revision).</p>
+<p>On the same page you can also <strong>split</strong> a commit off into a new change,
+when it was matched wrongly, or attach a new change to one that was
+removed. Both are recorded in the timeline and the audit log, and can be
+undone the same way.</p>
+<h2 id="reviews">Reviews<a href="#reviews" aria-label="Link to heading 'Reviews'" class="anchor"></a></h2>
+<p>Below the conversation, <strong>Review revision N</strong> submits a review of the
+current revision: a comment, an approval, or a request for changes. The
+author can only comment. Each reviewer's latest approval or request for
+changes is the one that counts.</p>
+<p>The author and people who can triage ask for reviews under <strong>Ask for
+reviews</strong>, by username or as <code>organization/team</code>. Requested reviewers find
+the merge request under <strong>Review requests</strong> (the icon next to
+notifications) until they review it.</p>
+<p>When you review again later, the merge request offers the changes since
+your last review.</p>
+<p>Slath keeps a <strong>ledger</strong> of every such decision: how each commit was
+matched to a change, which approvals were kept or went stale and why,
+which statuses stopped counting because the head moved, when the target
+moved, and which signatures a rebase merge removed. It's append-only;
+<code>GET …/merge-requests/{n}/ledger</code> returns it.</p>
+<p>What a new revision does to approvals depends on the branch protection of
+the target: by default, an approval stays only if the new revision kept
+every change's patch, as after a plain rebase. Otherwise it's marked stale
+and no longer counts. The timeline notes either case.</p>
+<p>When the target branch is protected and the merge request changes a
+<a href="bots.html#sensitive-paths">sensitive path</a>, such as a CI workflow, a file
+under <code>.slath/</code>, a code-owner file, or an agent instruction file like
+<code>AGENTS.md</code>, it also needs an approval from a person with the maintain role
+or higher, other than the author. Approvals by bots never count for this,
+even where bot approvals count otherwise. The readiness card says
+"Maintainer approval required" and lists the files.</p>
+<p>Every merge request page opens with a <strong>readiness card</strong>: one headline
+(such as "Ready to merge", "Approval required", or "Conflicts with
+main"), the reason, and the one thing you can do next, chosen for you:
+<strong>Merge</strong>, <strong>Review</strong>, <strong>Ask for review</strong>, <strong>Mark as ready</strong>, or <strong>Resolve
+conflicts</strong>. Below it, each requirement of the target branch is a line
+marked done (✓), waiting (clock, for normal waiting such as missing
+approvals or running checks), or blocking (✗, something must change).
+Open a line to see why and what fixes it. The same card sits again above
+the merge and review forms at the bottom, so you don't have to scroll up.
+The API returns the requirements at <code>GET …/merge-requests/{n}/mergeability</code>.</p>
+<p>When you approve, Slath notes how many files of the revision's diff you
+had marked viewed, counting only files you viewed as they are in that
+revision. The approvals line shows it for each approval, for example
+"Approved by alice (r3, 12 of 15 files viewed)", and opens to list the
+files no approver had viewed. It's a snapshot: viewing files later
+doesn't change it, and an approval kept after a rebase keeps it. Apart
+from this snapshot, which files you marked viewed stays private to you.
+The mergeability API returns the same as <code>coverage</code>.</p>
+<p>The timeline stays in one order, oldest first; <strong>Jump to newest</strong> skips
+to the end. When you come back after reviewing, the card says how many
+entries are new since your review, and a divider marks where they start.
+Runs of label, assignee, milestone, and review-request changes fold into
+one line you can open. Comments by bots are marked as claims: they never
+look like a review.</p>
+<p><strong>More</strong> next to the title marks a merge request as draft or ready, and
+closes or reopens it.</p>
+<h2 id="comments-on-lines">Comments on lines<a href="#comments-on-lines" aria-label="Link to heading 'Comments on lines'" class="anchor"></a></h2>
+<p>A <strong>thread</strong> starts on one line or a range of lines of a revision's diff,
+on either side (the new text, or the old text a change removed), or on the
+merge request as a whole. Others answer in it, and the merge request's
+author, the thread's author, or anyone who can push resolves it. Branch
+protection can require every thread to be resolved before merging.</p>
+<p>A bot can't resolve or reopen a thread a person started. It marks the
+thread <strong>addressed</strong> instead: the thread shows "Addressed by …" and stays
+open until a person resolves it, so an addressed thread still counts as
+unresolved. Resolving or reopening the thread clears the mark, and so
+does an answer from anyone but whoever marked it. Bots may resolve the
+threads bots started, such as their own notes.</p>
+<p>Comments can wait in your <strong>pending review</strong>: only you see them until you
+submit the review, and then they appear together.</p>
+<p>When a new revision comes in, a thread moves along with its lines if they
+are unchanged (marked "from revision N"). If they changed, the thread is
+<strong>outdated</strong>: it stays in the conversation and on the revision it was made
+on, but never sits on a line it wasn't written about.</p>
+<p>On the <strong>Changes</strong> page, select a line number to open a comment form under
+that line; set the last line to comment on a range. It works without
+JavaScript and with touch. Threads show under the lines they're about,
+with a link to answer in the conversation. <strong>Mark viewed</strong> collapses a
+file you've reviewed; it opens again by itself when the file changes in a
+new revision. The file list marks the files you viewed and counts each
+file's threads and how many are unresolved. <strong>Next unviewed file</strong> and
+<strong>Next unresolved thread</strong> above the files take you to the next one
+below where you are (with the keyboard, <strong>v</strong> and <strong>t</strong> while the diff
+has focus, next to <strong>n</strong> and <strong>p</strong> for the next and previous change).</p>
+<p>In the conversation, each thread shows the code it's about, its replies,
+and whether it's outdated or resolved. <strong>Reply…</strong> opens the reply form in
+place, and <strong>Cancel</strong> folds it again. <strong>Send reply</strong> sends the answer right
+away; <strong>Add to my review</strong> keeps it pending. If you may resolve the thread,
+<strong>Resolve thread</strong> in the form resolves it with your reply: at once, or,
+with <strong>Add to my review</strong>, when you submit the review. The <strong>Show</strong> menu above the
+timeline narrows the conversation to <strong>Unresolved</strong> threads or to what you
+wrote (<strong>Mine</strong>).</p>
+<p>The API has <code>GET …/merge-requests/{n}/threads</code> (with each thread's current
+position; <code>?resolved=false</code> lists only the unresolved ones), <code>POST …/threads</code> (<code>path</code>, <code>side</code>, <code>line_start</code>, <code>line_end</code>,
+<code>pending</code>), <code>POST …/threads/{id}/comments</code> (<code>body</code>, <code>pending</code>, and
+<code>resolve</code>, which also resolves the thread: at once, or with a pending
+reply when your review is submitted), and <code>PATCH …/threads/{id}</code> with
+<code>{"resolved": true}</code>. <code>PUT …/threads/{id}/addressed</code> marks a thread
+addressed (<code>DELETE</code> clears it), for whoever may resolve it; the thread
+JSON names <code>addressed_by</code> and <code>addressed_at</code>.</p>
+<h2 id="suggestions">Suggestions<a href="#suggestions" aria-label="Link to heading 'Suggestions'" class="anchor"></a></h2>
+<p>In a comment on lines of the new side, a <code>suggestion</code> block proposes the
+text that replaces them (an empty block deletes them):</p>
+<pre tabindex="0"><code class="language-text">Shorter:
+
+```suggestion
+let total = items.len();
+```
+</code></pre>
+<p>People who can push to the branch, and the merge request's author,
+apply suggestions on the server, one at a time or several together, in
+one of two ways, the same for Git and jj users:</p>
+<ul>
+<li><strong>As a new commit</strong> on top of the branch: its author is whoever made
+the suggestion (the person applying when several people did), its
+committer the person applying, and its message ends with a
+<code>Co-authored-by</code> line for each suggester.</li>
+<li><strong>Folded into its change</strong>: the commit that introduced the lines gets
+the fix, with a <code>Co-authored-by</code> line for each suggester, and the
+commits after it are rebased onto it. Every change keeps its ID,
+authors and messages stay, and the person applying becomes their
+committer. It works only when the suggested lines come from one commit
+of the merge request and nothing later conflicts; the result is always
+the same as applying on top. A branch that blocks force pushes takes
+only new commits.</li>
+</ul>
+<p>In the conversation, each suggestion shows the lines it replaces and its
+text. <strong>Apply suggestion</strong> applies it right away; <strong>Add to batch</strong> collects
+several, which <strong>Apply batch</strong> in the merge box applies together. The
+merge box also chooses between a new commit and folding. Either way the
+result is a revision like any push, and the threads of applied
+suggestions are resolved. After a fold, <code>jj git fetch</code> shows the
+same changes with the fix; with Git, reset your branch to the new one
+(<code>git pull --rebase</code>) before you push again.</p>
+<p>A suggestion can be applied only while its lines are unchanged since it
+was made; once they changed, it's outdated. Suggestions changing the
+same lines can't be applied together, and what a suggestion adds goes
+through the repository's push protection. The branch's protection
+applies as for a push.</p>
+<p>The API applies them with <code>POST …/merge-requests/{n}/suggestions/apply</code>
+and <code>{"comments": ["&lt;comment id&gt;", …], "mode": "commit", "expected_head_oid": "&lt;head&gt;"}</code>
+(<code>"mode": "fold"</code> to fold).</p>
+<h2 id="merging">Merging<a href="#merging" aria-label="Link to heading 'Merging'" class="anchor"></a></h2>
+<p>When every requirement is met, the readiness card offers <strong>Merge</strong> to
+people who can merge (the write role). It leads to the merge form at the
+bottom, with the strategies the repository allows:</p>
+<ul>
+<li><strong>Fast-forward</strong> moves the target to the branch's head; only possible
+when the target has nothing the branch doesn't.</li>
+<li><strong>Rebase</strong> (the default) replays each commit on the target. Authors,
+messages, and unknown headers stay as they were; the committer is the
+person merging, and signatures are dropped because the commits change.
+Each commit carries its change's ID, so jj users who fetch see the same
+IDs as the merge request, even for commits made with Git.</li>
+<li><strong>Merge commit</strong> adds a commit with both parents ("Merge !12: title"
+unless you write another message).</li>
+<li><strong>Squash</strong> makes one commit from the first commit's author, with the
+title and description as the message unless you write another. It keeps
+the change's ID if there's one change, and gets a new one otherwise.</li>
+</ul>
+<p>Merging uses the head you looked at: if someone pushed meanwhile, it stops
+and shows the new revision. If someone pushes to the target while merging,
+Slath rebuilds the merge on top, a few times at most. <strong>Delete the branch
+after merging</strong> removes the source branch unless it's protected.</p>
+<p>Messages you write for merge commits and squashes go through the
+repository's push protection like pushed commits do.</p>
+<p>When the branch conflicts with the target, the merge box lists the
+conflicting files and the commands that resolve them with Git or jj.</p>
+<p>The API merges with <code>POST …/merge-requests/{n}/merge</code> and
+<code>{"strategy": "rebase", "expected_head_oid": "&lt;head you reviewed&gt;"}</code>.</p>
+<h2 id="merge-when-ready">Merge when ready<a href="#merge-when-ready" aria-label="Link to heading 'Merge when ready'" class="anchor"></a></h2>
+<p>While a requirement is still missing (an approval, a check, a resolved
+thread), people who can merge can choose <strong>Merge when ready</strong> with a
+strategy instead. The merge request then merges as them as soon as the
+last requirement is met: when a check passes, a review approves, a thread
+is resolved, it's marked ready, or the target moves. It merges once, and
+a notice in the merge box says who set it.</p>
+<p>It's cancelled when someone other than the person who set it pushes a
+new revision (their own pushes keep it), when the merge request is
+closed, and with <strong>Cancel merge when ready</strong>, which the setter, the
+author, and anyone who can merge may use. If the merge itself fails, for
+example on a conflict, the timeline says why. The person who set it gets
+a notification when it merged, failed, or was cancelled.</p>
+<p>The API sets it with <code>PUT …/merge-requests/{n}/auto-merge</code> and
+<code>{"strategy": "rebase"}</code> (or <code>{}</code> for the repository's default), and
+cancels it with <code>DELETE</code> on the same path; merge requests show it as
+<code>auto_merge</code>.</p>
+<h2 id="updating-the-branch">Updating the branch<a href="#updating-the-branch" aria-label="Link to heading 'Updating the branch'" class="anchor"></a></h2>
+<p>When the target has commits the branch doesn't, the merge box offers
+<strong>Update branch</strong> to people who can push to the source branch. On a fork
+merge request, writers of the target can too while edits by maintainers
+are allowed. Choose how:</p>
+<ul>
+<li><strong>Merge</strong> the target into the branch: adds one merge commit, and
+nothing you pushed changes. Pull before you push again.</li>
+<li><strong>Rebase</strong> the branch onto the target: replays its commits like a
+rebase merge, keeping authors, messages, and change IDs. jj picks the
+new commits up as the same changes with <code>jj git fetch</code>; with Git, reset
+your branch to the new one (<code>git pull --rebase</code>) before you push again.</li>
+</ul>
+<p>The update becomes a new revision, and the timeline says who updated the
+branch and how. The source branch's protection applies as for a push: a
+branch that blocks force pushes can only be merged into, not rebased.</p>
+<p>The API updates with <code>POST …/merge-requests/{n}/update-branch</code> and
+<code>{"method": "merge", "expected_head_oid": "&lt;head you saw&gt;"}</code>; the
+mergeability response says <code>"up_to_date": false</code> when there's something
+to update.</p>
+<h2 id="statuses-and-required-checks">Statuses and required checks<a href="#statuses-and-required-checks" aria-label="Link to heading 'Statuses and required checks'" class="anchor"></a></h2>
+<p>CI systems and other tools report the result of a check on a commit with
+<code>POST /api/v1/repos/{namespace}/{repo}/statuses/{commit}</code> and a token with
+the <code>statuses:write</code> scope:</p>
+<pre tabindex="0"><code class="language-json">{"state": "success", "context": "ci/build", "target_url": "https://ci.example.org/runs/42"}
+</code></pre>
+<p><code>state</code> is <code>pending</code>, <code>success</code>, <code>failure</code>, or <code>error</code>; the latest status
+per context counts. Every status shows who reported it: Slath knows the
+reporter, not whether the check really ran. The commit page and the
+merge request's <strong>Checks</strong> list them, and
+<code>GET …/commits/{commit}/statuses</code> returns them.</p>
+<p>When the target's branch protection requires a context, the merge box
+shows it, with the reporter and why a status didn't count:</p>
+<ul>
+<li>only statuses on the merge request's head commit count;</li>
+<li>never the author's own statuses, or those of bots the author owns;</li>
+<li>if the rule lists reporters for the context, only theirs.</li>
+</ul>
+<p>A status can point at code with up to 50 line annotations (findings), for
+example a linter's warnings or an evaluator's comments:</p>
+<pre tabindex="0"><code class="language-json">{"state": "failure", "context": "lint", "annotations": [
+  {"path": "src/lib.rs", "line_start": 12, "line_end": 14, "severity": "warning",
+   "category": "maintainability", "message": "This branch is never taken."}
+]}
+</code></pre>
+<ul>
+<li><code>path</code> is a file of the commit, and its lines must exist there (at most
+500 per annotation; <code>line_end</code> defaults to <code>line_start</code>).</li>
+<li><code>severity</code> is <code>notice</code>, <code>warning</code>, or <code>failure</code>.</li>
+<li><code>category</code> is <code>correctness</code>, <code>security</code>, <code>tests</code>, <code>dependencies</code>,
+<code>scope</code>, <code>maintainability</code>, <code>docs</code>, or <code>other</code> (the default).</li>
+<li><code>message</code> is plain text of up to 4 KiB.</li>
+</ul>
+<p>A status with one invalid annotation is rejected as a whole, and the
+error names it (<code>annotations[3].line_start</code>). Annotations are returned
+with their status and sent in the <code>status</code> webhook. The limits are
+<code>limits.status_annotations</code> and <code>limits.status_annotation_max_bytes</code>.</p>
+<h3 id="findings-in-the-review">Findings in the review<a href="#findings-in-the-review" aria-label="Link to heading 'Findings in the review'" class="anchor"></a></h3>
+<p>Every open merge request of the same repository whose revision head is
+the annotated commit shows the annotations as <strong>finding threads</strong> on that
+revision, written by the reporter (with its Bot badge) and marked with the
+status's context and the severity:</p>
+<ul>
+<li>The message shows as plain text: no Markdown, links, mentions, or
+suggestions, since it comes from a tool.</li>
+<li>A later status of the same context on that commit resolves the findings
+it no longer reports ("resolved by" the reporter), and reopens those it
+resolved that way if they come back. A finding a person resolved stays
+resolved.</li>
+<li>Findings stay on their revision. After a new push they show in the
+conversation with their revision, not in the new diff; statuses on the
+new head bring the new revision's findings.</li>
+<li>You can reply to and resolve findings like any thread, but they never
+count as a review or approval, send no notifications, and don't count
+for "resolved threads" in branch protection. Whether a check blocks the
+merge depends only on its status.</li>
+<li>Statuses reported in a fork never reach a merge request in the original
+repository: like required checks, findings are read from the target
+repository. The API marks finding threads with <code>finding</code> (<code>context</code>,
+<code>severity</code>, <code>category</code>).</li>
+</ul>
+<h2 id="reading-diffs">Reading diffs<a href="#reading-diffs" aria-label="Link to heading 'Reading diffs'" class="anchor"></a></h2>
+<p>Diffs look the same on commits, the compare page, and merge requests:</p>
+<ul>
+<li>Code is syntax-highlighted as in the file view, in both themes and
+both views. Each side is highlighted as a whole file, so a line inside
+a comment or string that starts above the hunk reads correctly. Files
+larger than <code>[limits] diff_highlight_max_file_bytes</code> (512 KiB), and
+files past <code>diff_highlight_max_bytes</code> (4 MiB) on one page, are shown
+plain with a note saying so.</li>
+<li>In a changed line, the characters that changed are marked with a
+background and an underline, on top of the syntax colors. Lines are
+paired with the most similar line of the hunk; lines that changed
+almost entirely, and very long lines, get no marks.</li>
+<li>A file tree above the files links to each of them. It lists the files
+with changed content; <strong>All files</strong> adds the folded ones (see below),
+each with the reason it's folded.</li>
+<li><strong>Split</strong> shows old and new side by side; it's offered on screens at
+least 1024 pixels wide. <strong>Ignore whitespace</strong> hides changes that only
+touch spaces and indentation. Once you're signed in, both choices are
+remembered.</li>
+<li>Only files with changed content are shown right away. Everything else
+is folded with its reason, and <strong>Load diff</strong> shows it where there are
+lines to show: renamed or copied files without changes, files whose
+mode is the only change, files where only whitespace changed, files
+marked as generated in the repository's <code>.gitattributes</code>
+(<code>linguist-generated</code> or <code>slath-generated</code>), binary files, symbolic
+links, submodules, and files cut at the line limit. Above the diff,
+Slath says how many files are folded and how many are past the file
+limit, so nothing is left out without saying so.</li>
+<li>Large diffs load as you scroll, and very large files on request.</li>
+</ul>
+<h3 id="as-plain-text">As plain text<a href="#as-plain-text" aria-label="Link to heading 'As plain text'" class="anchor"></a></h3>
+<p>For tools, scripts, and agents, diffs also come as plain text:</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th>What</th>
+<th>In the browser</th>
+<th>Through the API</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A commit's diff (against its first parent)</td>
+<td><code>/&lt;ns&gt;/&lt;repo&gt;/commit/&lt;oid&gt;.diff</code></td>
+<td><code>GET /api/v1/repos/&lt;ns&gt;/&lt;repo&gt;/commits/&lt;oid&gt;/diff</code></td>
+</tr>
+<tr>
+<td>A commit as a patch mail</td>
+<td><code>/&lt;ns&gt;/&lt;repo&gt;/commit/&lt;oid&gt;.patch</code></td>
+<td><code>GET /api/v1/repos/&lt;ns&gt;/&lt;repo&gt;/commits/&lt;oid&gt;/patch</code></td>
+</tr>
+<tr>
+<td>A merge request's diff (current revision, from its merge base)</td>
+<td><code>/&lt;ns&gt;/&lt;repo&gt;/merge-requests/&lt;n&gt;.diff</code></td>
+<td><code>GET /api/v1/repos/&lt;ns&gt;/&lt;repo&gt;/merge-requests/&lt;n&gt;/diff</code></td>
+</tr>
+<tr>
+<td>A merge request's commits as patch mails</td>
+<td><code>/&lt;ns&gt;/&lt;repo&gt;/merge-requests/&lt;n&gt;.patch</code></td>
+<td><code>GET /api/v1/repos/&lt;ns&gt;/&lt;repo&gt;/merge-requests/&lt;n&gt;/patch</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Diffs are what <code>git diff</code> prints and patches what <code>git format-patch</code>
+prints, so <code>git apply</code> and <code>git am</code> take them. They're never folded or
+cut, up to 64 MiB. Who can read the repository can read them; the API
+needs a token with <code>repo:read</code> for private repositories.</p>
+<h2 id="checking-out-a-merge-request">Checking out a merge request<a href="#checking-out-a-merge-request" aria-label="Link to heading 'Checking out a merge request'" class="anchor"></a></h2>
+<p><strong>Check out</strong> next to the merge request's title shows commands to copy,
+each with a copy button, for Git or for jj. Slath shows your tool's: the
+one you chose under <strong>Settings → Appearance → Commands for</strong>, or, set to
+automatic, the one your recent pushes came from (jj writes a change ID
+into every commit, Git doesn't). Until it knows, it shows Git; switching
+to jj on the page works at any time, and your browser remembers it. Only commands differ; every page looks the
+same whichever tool made the commits. With Git, the current revision is
+always at <code>refs/merge-requests/&lt;n&gt;/head</code> (here merge request 12):</p>
+<pre tabindex="0"><code class="language-sh">git fetch origin refs/merge-requests/12/head &amp;&amp; git switch --detach FETCH_HEAD
+</code></pre>
+<p>A normal clone or fetch doesn't download these refs. With jj, which
+fetches branches, fetch the source branch:</p>
+<pre tabindex="0"><code class="language-sh">jj git fetch --remote origin --branch my-topic &amp;&amp; jj new my-topic@origin
+</code></pre>
+<p>A merge request from a fork is the branch <code>mr/&lt;n&gt;</code> in the original for
+those who check it out, so neither tool needs the fork as a remote; see
+<a href="forks.html#the-branch-mrn-in-the-original">The branch mr/&lt;n&gt; in the original</a>.</p>
+<h2 id="references">References<a href="#references" aria-label="Link to heading 'References'" class="anchor"></a></h2>
+<p>Issues and merge requests share numbers, so <code>#N</code> (or <code>owner/repo#N</code> for
+another repository) in a description or comment links to whichever it
+is, showing its title and state on hover. The issue or merge request you
+mention shows "mentioned this in" with a link back, once for each place
+that mentions it. You see that line only if you can read where the
+mention was written, and mentions of something you can't read stay plain
+text.</p>
+<h2 id="closing-issues">Closing issues<a href="#closing-issues" aria-label="Link to heading 'Closing issues'" class="anchor"></a></h2>
+<p>A closing keyword right before an issue reference closes the issue once
+the work lands on the default branch:</p>
+<pre tabindex="0"><code class="language-text">Fixes #12
+closes: owner/other-repo#3
+</code></pre>
+<p>The keywords are <code>close</code>, <code>closes</code>, <code>closed</code>, <code>fix</code>, <code>fixes</code>, <code>fixed</code>,
+<code>resolve</code>, <code>resolves</code>, and <code>resolved</code>, in any case, optionally followed
+by a colon. Put one before each issue: in <code>Fixes #1, fixes #2</code> both
+close, in <code>Fixes #1 and #2</code> only <code>#1</code> does. They count in:</p>
+<ul>
+<li>commit messages pushed to the default branch, by Git, jj, or a merge
+in Slath (up to <code>[limits] review_max_commits</code> commits per push);</li>
+<li>the description of a merge request when it's merged into the default
+branch.</li>
+</ul>
+<p>The issue closes as completed, and its timeline links the commit or
+merge request for everyone who can read it. A keyword acts only if
+whoever pushed or merged may close that issue: keywords naming an issue
+you can't close, or a repository you can't read, do nothing.</p>
+<h2 id="closing-and-reopening">Closing and reopening<a href="#closing-and-reopening" aria-label="Link to heading 'Closing and reopening'" class="anchor"></a></h2>
+<p>The author and people who can triage close a merge request with <strong>Close
+merge request</strong>, or <strong>Comment and close</strong>. Deleting the source branch
+closes it too. <strong>Restore branch and reopen</strong> recreates the branch at its
+last revision; it needs write access to the repository.</p>
+<h2 id="notifications">Notifications<a href="#notifications" aria-label="Link to heading 'Notifications'" class="anchor"></a></h2>
+<p>Your notifications list merge requests next to issues, marked <code>!N</code>. You
+hear about a merge request when:</p>
+<ul>
+<li>you're asked to review it (<strong>Review requested</strong>). A draft asks no one
+yet: its requested reviewers hear about it once it's marked ready
+(<strong>Ready for your review</strong>). So does a bot's merge request while it's
+<a href="bots.html#iterating-merge-requests">iterating</a>;</li>
+<li>you opened it (<strong>You opened it</strong>), or took part: commented, reviewed,
+wrote in a review thread, are assigned, or are a requested reviewer
+(<strong>You took part</strong>);</li>
+<li>someone mentions you, or a team you're in (<strong>You were mentioned</strong>);</li>
+<li>you watch the merge request or the repository (<strong>You're watching</strong>).</li>
+</ul>
+<p>Taking part notifies you of new comments, submitted reviews, new
+revisions, readiness, merging, closing, and reopening. Comments of a
+review that isn't submitted yet stay quiet until it is. You never hear
+about what you did yourself, and someone who can no longer read the
+repository hears nothing more. Every email has an unsubscribe link for
+that merge request; ignoring a repository still lets review requests and
+mentions through.</p>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../user/forks.html">Previous: Forks</a><a rel="next" href="../user/webhooks.html">Next: Webhooks</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html" aria-current="page">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

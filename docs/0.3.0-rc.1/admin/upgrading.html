@@ -1,0 +1,230 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Upgrading Slath · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="upgrading-slath">Upgrading Slath<a href="#upgrading-slath" aria-label="Link to heading 'Upgrading Slath'" class="anchor"></a></h1>
+<p>To update, <strong>install the new version and restart Slath</strong>. You can update
+directly from any release since 0.3.0; there's no need to install the
+releases in between.</p>
+<ul>
+<li><strong>Docker Compose:</strong> set <code>SLATH_VERSION</code> in <code>.env</code> to the new release (or
+use the new release's <code>compose.yml</code>), then <code>docker compose up -d</code>.</li>
+<li><strong>systemd:</strong> replace <code>/usr/bin/slath</code> with the new binary, then
+<code>systemctl restart slath</code>.</li>
+</ul>
+<p>When it starts, Slath sees that the database is older and updates it
+before serving:</p>
+<ol>
+<li>It runs the preflight checks (see below). If one fails, or the release
+notes list a manual step you must do first, it <strong>refuses to start</strong>,
+logs what to do, and changes nothing. Fix it, or run the old version
+again until you can.</li>
+<li>It backs up the database and repositories into
+<code>&lt;data_dir&gt;/backups/pre-upgrade-&lt;from&gt;-&lt;to&gt;-&lt;time&gt;</code> (the <code>backups</code>
+volume in Compose) and then deletes older pre-upgrade backups except the
+newest two (<code>[upgrade] backups_kept</code>). Copy backups off the host as
+well. <code>[upgrade] auto_backup = false</code> turns this backup off, which isn't
+recommended.</li>
+<li>It applies the schema migrations, refreshes the Git hooks, registers
+background migrations, checks the result, and records the update under
+<strong>Administration → Upgrades</strong>.</li>
+</ol>
+<p>If the start is interrupted, starting again finishes the update.</p>
+<p>A release candidate, such as 0.3.0-rc.1, updates to later candidates and
+to its release like any other version. Releases 0.1.x and 0.2.0 were
+previews and can't be upgraded; see
+<a href="#coming-from-a-preview">Coming from a preview</a>.</p>
+<h3 id="hearing-about-new-releases">Hearing about new releases<a href="#hearing-about-new-releases" aria-label="Link to heading 'Hearing about new releases'" class="anchor"></a></h3>
+<p>Turn on <code>[upgrade] check_for_updates = true</code> to have Slath ask for new
+releases once a day. <strong>Administration → Health</strong> and <strong>Upgrades</strong> then say
+when a newer release is available and link its release notes. Slath never
+installs anything itself. It's off by default, and then Slath makes no
+request at all. The check asks GitHub's release list for this project; set
+<code>[upgrade] feed_url</code> to use another source in the same format.</p>
+<h2 id="with-slath-upgrade">With <code>slath upgrade</code><a href="#with-slath-upgrade" aria-label="Link to heading 'With slath upgrade'" class="anchor"></a></h2>
+<p>To see what an update would do before you restart, or to update while the
+server keeps serving read-only, install the new binary and run <code>slath upgrade</code> yourself. First the preview, which changes nothing and is safe to
+run at any time:</p>
+<pre tabindex="0"><code class="language-sh">slath upgrade --check
+</code></pre>
+<p>It runs the preflight checks (PostgreSQL and Git versions, free disk space
+for the backup, that no other upgrade is running, the configuration,
+whether the data directory is writable, and whether your current release
+can upgrade directly), and prints the upgrade notes of every release you
+skip, including manual steps and background migrations.</p>
+<p>Then upgrade:</p>
+<pre tabindex="0"><code class="language-sh">slath upgrade
+</code></pre>
+<ol>
+<li>If any preflight check fails, it stops before changing anything.</li>
+<li>A running server switches to read-only maintenance: pages show a
+banner, saving and pushing are refused with a message, and browsing and
+cloning keep working.</li>
+<li>It backs up the database and repositories into
+<code>&lt;data_dir&gt;/backups/pre-upgrade-&lt;from&gt;-&lt;to&gt;-&lt;time&gt;</code> (<code>--backup-dir</code> puts
+it elsewhere; <code>--no-backup</code> skips it, which isn't recommended).</li>
+<li>It applies the schema migrations one by one under a lock and shows each.</li>
+<li>It refreshes the Git hooks and registers background migrations, which
+the server runs while it's up (see below).</li>
+<li>It checks the result and records the upgrade under <strong>Administration →
+Upgrades</strong>.</li>
+</ol>
+<p>Then restart <code>slath serve</code> with the new version. The read-only mode ends
+when it starts.</p>
+<p>If a required manual step is listed in the upgrade notes, do it first and
+confirm it with <code>--accept-action &lt;id&gt;</code>. Pass <code>--yes</code> to skip the
+confirmation question (scripts, agents), and <code>--output json</code> for
+machine-readable output.</p>
+<p><strong>If the upgrade is interrupted</strong> (power loss, a killed process, a failed
+migration), run <code>slath upgrade</code> again: every step can be repeated and it
+continues where it stopped. The output says which backup to restore if you
+would rather go back.</p>
+<p><strong>Going back</strong> to the previous version means restoring the pre-upgrade
+backup with the previous binary (<a href="backup.html">Backup and restore</a>);
+downgrades aren't supported otherwise. An older binary refuses to start on
+an upgraded database and says which backup to restore.</p>
+<h3 id="containers">Containers<a href="#containers" aria-label="Link to heading 'Containers'" class="anchor"></a></h3>
+<p>The same commands run in the container:</p>
+<pre tabindex="0"><code class="language-sh">docker compose run --rm slath upgrade --check
+docker compose run --rm slath upgrade --accept-action &lt;id&gt;   # if the notes require it
+</code></pre>
+<h3 id="background-migrations">Background migrations<a href="#background-migrations" aria-label="Link to heading 'Background migrations'" class="anchor"></a></h3>
+<p>Long data migrations run in the background in small batches while Slath
+is up, so the upgrade itself stays short. <strong>Administration → Upgrades</strong> and
+<code>slath admin background-migrations list</code> show progress and the estimated
+time left; you can pause, resume, or retry them there. Features that need
+one show a notice until it has finished.</p>
+<h2 id="postgresql">PostgreSQL<a href="#postgresql" aria-label="Link to heading 'PostgreSQL'" class="anchor"></a></h2>
+<p>Keep PostgreSQL on the newest minor release of its major version: minor
+releases are security and bug fixes, and installing one is just replacing
+the binaries (your distribution's packages, or the image) and restarting.
+<code>slath doctor</code> and <code>slath upgrade --check</code> warn when the server lacks the
+latest security release Slath knows of.</p>
+<ul>
+<li><strong>Compose:</strong> <code>docker compose pull postgres &amp;&amp; docker compose up -d</code>. The
+image tag <code>postgres:18</code> follows the newest 18.x.</li>
+<li><strong>Packages:</strong> update the PostgreSQL packages and restart the service.</li>
+</ul>
+<p>After updating to 18.7, 17.12, 16.16, or 15.20 (security release of
+2026-11-12), rebuild Slath's GIN indexes, which those releases fix
+corruption in. It takes no lock that stops Slath:</p>
+<pre tabindex="0"><code class="language-sh">psql -d slath -c 'REINDEX INDEX CONCURRENTLY repositories_name_trgm' \
+  -c 'REINDEX INDEX CONCURRENTLY repositories_description_trgm' \
+  -c 'REINDEX INDEX CONCURRENTLY issues_search' \
+  -c 'REINDEX INDEX CONCURRENTLY comments_search' \
+  -c 'REINDEX INDEX CONCURRENTLY merge_requests_search'
+</code></pre>
+<p>With Compose: <code>docker compose exec postgres psql -U slath -d slath -c …</code>.</p>
+<p><strong>Slath's role is never a superuser.</strong> <code>slath setup</code> creates a role that
+only owns Slath's database, and so does the Compose file for a new
+installation (the superuser <code>postgres</code> logs in only through the container's
+socket). Then a bug in Slath, or a PostgreSQL flaw that needs a privileged
+role, can't take over the database server. <code>slath doctor</code> warns
+(<code>postgres.superuser</code>) if the role is one. An installation from an older
+Compose file has <code>slath</code> as the image's built-in superuser, which can't be
+demoted; move it to a new database with a backup and restore
+(<code>slath backup create</code>, then <code>slath backup restore</code> into a new Compose
+installation).</p>
+<h2 id="configuration-across-releases">Configuration across releases<a href="#configuration-across-releases" aria-label="Link to heading 'Configuration across releases'" class="anchor"></a></h2>
+<p>A configuration file written for an earlier release keeps working. When a
+release renames a key, the old name still works for at least two minor
+releases (and within the same major version): Slath maps it to the new name
+and logs a warning, and <code>slath config check</code> lists it. To update the file:</p>
+<pre tabindex="0"><code class="language-sh">slath config migrate /etc/slath/slath.toml
+</code></pre>
+<p>It rewrites deprecated keys to their replacements, keeps your comments, and
+saves the previous file as <code>slath.toml.bak</code>. Running it again changes
+nothing. Keys set through <code>SLATH__…</code> environment variables are mapped the
+same way, but you have to rename those yourself.</p>
+<h2 id="coming-from-a-preview">Coming from a preview<a href="#coming-from-a-preview" aria-label="Link to heading 'Coming from a preview'" class="anchor"></a></h2>
+<p>The 0.1 and 0.2 releases were previews. Their databases can't be upgraded:
+<code>slath upgrade</code>, <code>slath migrate</code>, <code>slath serve</code>, and <code>slath backup restore</code>
+refuse them and say so. To move to this version:</p>
+<ol>
+<li>Install it as a new instance, with an empty database and data
+directory (<a href="install.html">Installing Slath</a>), next to the preview.</li>
+<li>Create the users and organizations again, and bring each repository over
+with <strong>Import a repository</strong> (<code>/-/import</code>, from the preview's HTTPS
+URL, with a token for private repositories) or with
+<code>git push --mirror</code>.</li>
+<li>Create new access tokens: tokens from the previews don't work any more.
+Users add their SSH keys again.</li>
+</ol>
+<p>Issues, settings, and other data of the preview aren't carried over.</p>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../admin/bootstrap.html">Previous: Setting up an instance from a file</a><a rel="next" href="../admin/verify.html">Next: Verifying a release</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html" aria-current="page">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

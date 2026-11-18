@@ -1,0 +1,242 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Webhooks · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="webhooks">Webhooks<a href="#webhooks" aria-label="Link to heading 'Webhooks'" class="anchor"></a></h1>
+<p>A webhook sends an HTTP request to a URL of your choice whenever something
+happens in a repository: a push, a merge request or issue event, a
+comment, a review, a status, a fork, or a change to the repository itself.
+Use it to start a build, post to a chat, or keep another system up to
+date.</p>
+<h2 id="adding-a-webhook">Adding a webhook<a href="#adding-a-webhook" aria-label="Link to heading 'Adding a webhook'" class="anchor"></a></h2>
+<p>Repository administrators add webhooks under <strong>Settings → Webhooks</strong> of the
+repository. Organization owners add them under the organization's
+<strong>Settings → Webhooks</strong>; those receive the events of every repository of
+the organization.</p>
+<ul>
+<li><strong>URL:</strong> where Slath sends the events, an <code>https://</code> address. Addresses
+in internal networks (loopback, private ranges, link-local, and the
+like) are refused unless the site administrator allowed them.</li>
+<li><strong>Events:</strong> one or more of the events below.</li>
+<li><strong>Secret:</strong> 16 to 256 characters that you and the receiver share. Leave
+it empty and Slath generates one; it's shown once, so copy it then.
+Slath stores it encrypted and never shows it again.</li>
+<li><strong>Active:</strong> whether it sends anything.</li>
+</ul>
+<p><strong>Send a ping</strong> checks that the receiver is reachable. The webhook's page
+lists its deliveries from the last 30 days, each with the request, every
+attempt's status and response, and <strong>Redeliver</strong>.</p>
+<p>The same is available in the API under
+<code>/api/v1/repos/{owner}/{repo}/webhooks</code> and <code>/api/v1/orgs/{org}/webhooks</code>.</p>
+<h2 id="events">Events<a href="#events" aria-label="Link to heading 'Events'" class="anchor"></a></h2>
+<div class="docs-table" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Sent when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>push</code></td>
+<td>a branch or tag is created, updated, or deleted (<code>action</code>: <code>created</code>, <code>updated</code>, <code>deleted</code>)</td>
+</tr>
+<tr>
+<td><code>merge_request</code></td>
+<td>a merge request is <code>opened</code>, <code>updated</code> (a new revision), <code>ready</code>, <code>closed</code>, <code>reopened</code>, or <code>merged</code></td>
+</tr>
+<tr>
+<td><code>merge_request_comment</code></td>
+<td>someone comments on a merge request or in one of its review threads</td>
+</tr>
+<tr>
+<td><code>merge_request_review</code></td>
+<td>someone submits a review (<code>approve</code>, <code>request_changes</code>, or <code>comment</code>)</td>
+</tr>
+<tr>
+<td><code>issue</code></td>
+<td>an issue is <code>opened</code>, <code>closed</code>, <code>reopened</code>, or <code>assigned</code></td>
+</tr>
+<tr>
+<td><code>issue_comment</code></td>
+<td>someone comments on an issue</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>a check reports a status on a commit (<code>action</code>: the state; the <code>status</code> object includes its <code>annotations</code>)</td>
+</tr>
+<tr>
+<td><code>fork</code></td>
+<td>someone forks the repository</td>
+</tr>
+<tr>
+<td><code>repo</code></td>
+<td>the repository is <code>created</code>, <code>renamed</code>, <code>deleted</code>, or changes <code>visibility</code></td>
+</tr>
+<tr>
+<td><code>ping</code></td>
+<td>you send a ping</td>
+</tr>
+</tbody>
+</table></div>
+<p>Every payload is JSON with <code>event</code>, <code>action</code> (where the event has one),
+<code>repository</code> (<code>id</code>, <code>full_name</code>, <code>visibility</code>, <code>html_url</code>, <code>api_url</code>),
+<code>sender</code> (<code>username</code>, <code>kind</code>), and the event's object: <code>push</code>,
+<code>merge_request</code>, <code>issue</code>, <code>comment</code>, <code>review</code>, <code>status</code>, <code>fork</code>, or
+<code>change</code>. A <code>push</code> lists at most 20 commits; very long texts are cut and
+end in "… (cut)". Issues, merge requests, comments, reviews, and statuses
+carry <code>untrusted_content</code> and the <code>origin</code> of their text, as in the API
+(see <a href="agents.html#surfaces-for-programs">who wrote what</a>).</p>
+<p>A webhook acts for the person who created it or last changed its URL or
+secret. It sends an event only if that person can read the repository (and
+its issues or merge requests) at that moment, so it never carries more than
+they could see. If that account is deleted or suspended, the webhook is
+switched off.</p>
+<h2 id="receiving-events">Receiving events<a href="#receiving-events" aria-label="Link to heading 'Receiving events'" class="anchor"></a></h2>
+<p>Each request is a <code>POST</code> with these headers:</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>X-Slath-Event</code></td>
+<td>the event, e.g. <code>push</code></td>
+</tr>
+<tr>
+<td><code>X-Slath-Delivery</code></td>
+<td>the delivery's ID; the same on every retry of that delivery</td>
+</tr>
+<tr>
+<td><code>X-Slath-Timestamp</code></td>
+<td>when this attempt was signed, in seconds since 1970 (UTC)</td>
+</tr>
+<tr>
+<td><code>X-Slath-Signature-256</code></td>
+<td><code>sha256=</code> and the hex HMAC-SHA256 of the timestamp, a <code>.</code>, and the body, keyed with the secret</td>
+</tr>
+</tbody>
+</table></div>
+<p>Answer with any <code>2xx</code> status within 10 seconds. Anything else, a redirect,
+or no answer counts as a failure: Slath tries again after 1, 2, 4, … minutes
+(at most 6 hours apart), 8 attempts in all. After 50 failed attempts in a
+row, Slath switches the webhook off and emails the person it acts for; turn
+it on again once the receiver works. Because of retries, a receiver can see
+a delivery more than once: use <code>X-Slath-Delivery</code> to ignore repeats.</p>
+<h3 id="checking-the-signature">Checking the signature<a href="#checking-the-signature" aria-label="Link to heading 'Checking the signature'" class="anchor"></a></h3>
+<p>Check every request before acting on it: compute the signature over the
+timestamp and the raw body with your secret, compare it in constant time,
+and reject timestamps older than 5 minutes so a recorded request can't be
+replayed later. The samples below do exactly that; they're also available
+under the Apache-2.0 license, so you can copy them into your own code.</p>
+<p>Python:</p>
+<pre tabindex="0"><code class="language-python"># SPDX-License-Identifier: Apache-2.0
+import hashlib
+import hmac
+import time
+
+
+def verify(secret: bytes, timestamp: str, signature: str, body: bytes) -&gt; bool:
+    """True if a Slath webhook request is genuine and recent."""
+    if abs(time.time() - int(timestamp)) &gt; 300:
+        return False
+    mac = hmac.new(secret, timestamp.encode() + b"." + body, hashlib.sha256)
+    return hmac.compare_digest("sha256=" + mac.hexdigest(), signature)
+</code></pre>
+<p>JavaScript (Node.js):</p>
+<pre tabindex="0"><code class="language-js">// SPDX-License-Identifier: Apache-2.0
+const crypto = require("node:crypto");
+
+// True if a Slath webhook request is genuine and recent.
+function verify(secret, timestamp, signature, body) {
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) &gt; 300) return false;
+  const mac = crypto.createHmac("sha256", secret);
+  mac.update(`${timestamp}.`);
+  mac.update(body);
+  const expected = Buffer.from("sha256=" + mac.digest("hex"));
+  const given = Buffer.from(signature);
+  return expected.length === given.length &amp;&amp; crypto.timingSafeEqual(expected, given);
+}
+</code></pre>
+<p>Pass the body exactly as received (bytes, before any JSON parsing), and the
+three header values as strings.</p>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../user/merge-requests.html">Previous: Merge requests</a><a rel="next" href="../user/agents.html">Next: Working with AI agents</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html" aria-current="page">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

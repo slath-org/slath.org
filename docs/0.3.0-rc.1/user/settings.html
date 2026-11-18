@@ -1,0 +1,113 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Appearance and time zone · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="appearance-and-time-zone">Appearance and time zone<a href="#appearance-and-time-zone" aria-label="Link to heading 'Appearance and time zone'" class="anchor"></a></h1>
+<p><strong>Settings → Appearance</strong> holds how Slath looks for you. The choices belong
+to your account, so they follow you to every device you sign in on.</p>
+<ul>
+<li><strong>Theme</strong>: System (follows your device), Light, or Dark.</li>
+<li><strong>Density</strong>: Comfortable or Compact. Compact has less padding; text and
+touch targets keep their size.</li>
+<li><strong>Code font size</strong>: 12 to 20 pixels, for code, diffs, and commands.</li>
+<li><strong>Time zone</strong>: the zone pages and emails show times in.</li>
+<li><strong>Commands for</strong>: whether pages show checkout and conflict commands for
+Git or for jj. Automatic follows what your recent pushes came from. See
+<a href="merge-requests.html">Merge requests</a>.</li>
+</ul>
+<h2 id="time-zones">Time zones<a href="#time-zones" aria-label="Link to heading 'Time zones'" class="anchor"></a></h2>
+<p>Until you choose one, times are in UTC. When you open the page, it
+proposes the zone of the device you're using ("Proposed from this device:
+Europe/Berlin"); nothing changes until you save. The list is the IANA time
+zone database built into Slath, by region; <code>Etc</code> holds fixed offsets such
+as UTC−12.</p>
+<p>With a zone chosen:</p>
+<ul>
+<li>Pages show times in it, correct across daylight saving changes:
+recent ones as "3 hours ago", older ones as a date ("14 Nov 2026"),
+with the exact time and the zone's abbreviation or offset in a tooltip
+("2026-11-14 10:05 CET", "2026-11-14 14:50 UTC+05:45").</li>
+<li>Emails Slath sends you, such as security notices, use it too.</li>
+<li>Dates without a time, such as a milestone's due date, are calendar
+dates: the same day for everyone, whatever their zone.</li>
+<li>The API always returns times in UTC (RFC 3339), whatever your setting.</li>
+<li>Scheduled work, such as an instance's daily backup, runs at a time
+stated in UTC.</li>
+</ul>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="next" href="../user/bots.html">Next: Bots</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html" aria-current="page">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

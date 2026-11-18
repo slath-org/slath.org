@@ -1,0 +1,636 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Merge requests · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="merge-requests">Merge requests</h1>
+<section class="api-op" aria-labelledby="list_mrs">
+<h2 id="list_mrs"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests</code></h2>
+<p>A repository&#39;s merge requests, newest first.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>state</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>sort</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>labels</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>assignee</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>author</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>milestone</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_mr">
+<h2 id="create_mr"><code>POST /api/v1/repos/{ns}/{repo}/merge-requests</code></h2>
+<p>Opens a merge request from a branch of this repository or of a fork in
+its network.</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>NewMergeRequest</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_mr">
+<h2 id="get_mr"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}</code></h2>
+<p>One merge request.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="update_mr">
+<h2 id="update_mr"><code>PATCH /api/v1/repos/{ns}/{repo}/merge-requests/{number}</code></h2>
+<p>Edits, closes or reopens, or marks a merge request draft or ready
+(author or triage); turns edits by maintainers on or off (whoever can
+push to a fork source).</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>UpdateMergeRequest</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="put_auto_merge">
+<h2 id="put_auto_merge"><code>PUT /api/v1/repos/{ns}/{repo}/merge-requests/{number}/auto-merge</code></h2>
+<p>Sets merge when ready (`mr.auto_merge`): it merges as you, with
+`strategy`, as soon as every requirement is met (right away if they
+are). A new revision pushed by someone else cancels it.</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>AutoMergeBody</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="delete_auto_merge">
+<h2 id="delete_auto_merge"><code>DELETE /api/v1/repos/{ns}/{repo}/merge-requests/{number}/auto-merge</code></h2>
+<p>Cancels merge when ready: whoever set it, the author, or anyone who may
+set it.</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="checkout">
+<h2 id="checkout"><code>POST /api/v1/repos/{ns}/{repo}/merge-requests/{number}/checkout</code></h2>
+<p>&quot;Check out&quot;: a fork merge request&#39;s branch `mr/&lt;n&gt;` shows in the
+caller&#39;s fetches of this repository from now on.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_mr_comments">
+<h2 id="list_mr_comments"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/comments</code></h2>
+<p>The conversation&#39;s comments, oldest first.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_mr_comment">
+<h2 id="create_mr_comment"><code>POST /api/v1/repos/{ns}/{repo}/merge-requests/{number}/comments</code></h2>
+<p>Comments on a merge request.</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>MrCommentBody</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_mr_diff">
+<h2 id="get_mr_diff"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/diff</code></h2>
+<p>The current revision&#39;s diff from its merge base, as plain text (`git diff`).</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>413</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_interdiff">
+<h2 id="get_interdiff"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/interdiff</code></h2>
+<p>Two revisions compared, as plain text (`git range-diff`). It pairs
+commits by similarity, so it&#39;s a heuristic. 404 when a revision is
+unknown or has no merge base.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>from</code></td><td>query</td><td>yes</td></tr>
+<tr><td><code>to</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>413</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_inventory">
+<h2 id="get_inventory"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/inventory</code></h2>
+<p>The inventory of a merge request revision&#39;s diff (`merge_base..head`),
+or of one change version&#39;s diff (`parent..commit`).</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>revision</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>commit</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_iteration">
+<h2 id="get_iteration"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/iteration</code></h2>
+<p>The current revision, the interdiff since `since`, failing required
+checks, unresolved threads, and mergeability, in one call. 422 when
+`since` isn&#39;t a revision of the merge request.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>since</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_ledger">
+<h2 id="get_ledger"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/ledger</code></h2>
+<p>Every identity decision and effect on review state, oldest first.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="merge">
+<h2 id="merge"><code>POST /api/v1/repos/{ns}/{repo}/merge-requests/{number}/merge</code></h2>
+<p>Merges the merge request (`mr.merge`). 409 when its head isn&#39;t
+`expected_head_oid`, a requirement isn&#39;t met, merging conflicts, or the
+target kept moving.</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>MergeBody</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_mergeability">
+<h2 id="get_mergeability"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/mergeability</code></h2>
+<p>Whether the merge request can be merged, with each requirement.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_mr_patch">
+<h2 id="get_mr_patch"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/patch</code></h2>
+<p>The current revision&#39;s commits as patch mails, as plain text (`git format-patch`).</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>413</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="put_reviewers">
+<h2 id="put_reviewers"><code>PUT /api/v1/repos/{ns}/{repo}/merge-requests/{number}/reviewers</code></h2>
+<p>Sets who is asked to review (the author or triagers).</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>Reviewers</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_reviews">
+<h2 id="list_reviews"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/reviews</code></h2>
+<p>The reviews of a merge request, oldest first.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_review">
+<h2 id="create_review"><code>POST /api/v1/repos/{ns}/{repo}/merge-requests/{number}/reviews</code></h2>
+<p>Reviews the current revision. The author may only comment; a comment
+needs a body.</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>NewReview</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_revisions">
+<h2 id="list_revisions"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/revisions</code></h2>
+<p>A merge request&#39;s revisions, oldest first.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_stack">
+<h2 id="get_stack"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/stack</code></h2>
+<p>The changes of the current revision: each commit with its change ID
+and how it was matched.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="bind_change">
+<h2 id="bind_change"><code>POST /api/v1/repos/{ns}/{repo}/merge-requests/{number}/stack/{position}/bind</code></h2>
+<p>Binds a commit of the current revision by hand: picks a change for an
+unresolved commit, splits a continued change into a new one
+(`change: null`), or joins a new change to a removed one. Open to the
+author and anyone who can push the source; audited.</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>position</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>BindBody</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="apply_suggestions">
+<h2 id="apply_suggestions"><code>POST /api/v1/repos/{ns}/{repo}/merge-requests/{number}/suggestions/apply</code></h2>
+<p>Applies suggestions to the source branch (`mr.apply_suggestion`, or
+the merge request&#39;s author; writing the branch needs push on the source
+or edits by maintainers). 409 when one is outdated, two overlap, or the
+branch moved or is protected.</p>
+<p>Token scopes: <code>mrs:write</code>, <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>ApplySuggestionsBody</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_threads">
+<h2 id="list_threads"><code>GET /api/v1/repos/{ns}/{repo}/merge-requests/{number}/threads</code></h2>
+<p>The threads the caller may see, with their position in the current
+revision.</p>
+<p>Token scopes: <code>repo:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>resolved</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_thread">
+<h2 id="create_thread"><code>POST /api/v1/repos/{ns}/{repo}/merge-requests/{number}/threads</code></h2>
+<p>Starts a thread on lines of a revision&#39;s diff, or on the whole merge
+request.</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>NewThreadBody</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="update_thread">
+<h2 id="update_thread"><code>PATCH /api/v1/repos/{ns}/{repo}/merge-requests/{number}/threads/{id}</code></h2>
+<p>Resolves or reopens a thread (the merge request&#39;s author, the thread&#39;s
+author, or someone who can push). A bot can&#39;t settle a thread a person
+started (409): it marks it addressed instead.</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>ThreadUpdate</code></p>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="mark_addressed">
+<h2 id="mark_addressed"><code>PUT /api/v1/repos/{ns}/{repo}/merge-requests/{number}/threads/{id}/addressed</code></h2>
+<p>Marks a thread addressed, for whoever may resolve it: what bots do for
+threads people started. It satisfies nothing; the thread stays open
+until a person resolves it. 409 for a resolved thread.</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="clear_addressed">
+<h2 id="clear_addressed"><code>DELETE /api/v1/repos/{ns}/{repo}/merge-requests/{number}/threads/{id}/addressed</code></h2>
+<p>Clears a thread&#39;s addressed mark.</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="reply">
+<h2 id="reply"><code>POST /api/v1/repos/{ns}/{repo}/merge-requests/{number}/threads/{id}/comments</code></h2>
+<p>Answers in a thread; with `resolve`, also resolves it (a bot can&#39;t
+resolve a thread a person started: 409).</p>
+<p>Token scopes: <code>mrs:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>ReplyBody</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="update_branch">
+<h2 id="update_branch"><code>POST /api/v1/repos/{ns}/{repo}/merge-requests/{number}/update-branch</code></h2>
+<p>Brings the source branch up to date with the target
+(`mr.update_branch`): needs push on the source, or edits by maintainers
+of a fork&#39;s branch. The new head becomes a revision. 409 when it&#39;s
+already up to date, conflicts, moved, or its protection refuses.</p>
+<p>Token scopes: <code>mrs:write</code>, <code>repo:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>ns</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>repo</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>number</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>UpdateBranchBody</code></p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../api/issues.html">Previous: Issues</a><a rel="next" href="../api/meta.html">Next: Meta</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html" aria-current="page">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

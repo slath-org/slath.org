@@ -1,0 +1,229 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Forks · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="forks">Forks<a href="#forks" aria-label="Link to heading 'Forks'" class="anchor"></a></h1>
+<p>A fork is your own copy of a repository's branches and tags: you can push
+to it freely, without write access to the original, and offer your changes
+back with a merge request.</p>
+<h2 id="forking">Forking<a href="#forking" aria-label="Link to heading 'Forking'" class="anchor"></a></h2>
+<p><strong>Fork</strong> in the repository header (shown when you're signed in, the
+repository allows forks, and you have somewhere to fork it to) opens the
+fork form:</p>
+<ul>
+<li><strong>Owner</strong>: your account or an organization where you can create
+repositories, except the original's own owner. To change a repository
+in your own account, push a branch to it instead; you can fork it only
+into an organization.</li>
+<li><strong>Name</strong>: the original's name unless you change it. If you already have
+a repository with that name, the form suggests a free one.</li>
+<li><strong>Who can see this repository</strong>: the original's visibility at most. A
+fork of a private repository is private, and stays so even if the
+original is deleted.</li>
+<li><strong>Copy only the default branch</strong>: leaves the other branches behind
+(tags in the default branch's history still come along).</li>
+</ul>
+<p>The fork opens right away. Its branches and tags are copied in the
+background, usually within a second; until then the page says so and
+pushes to it are refused. Merge requests, issues, and the original's
+settings aren't copied.</p>
+<p>A fork shows <strong>Forked from</strong> with a link to the original (or "a deleted
+repository"). <strong>Forks</strong> of a repository (<code>/&lt;owner&gt;/&lt;repo&gt;/forks</code>, linked
+from the fork form) lists the forks you can see.</p>
+<h2 id="keeping-a-fork-up-to-date">Keeping a fork up to date<a href="#keeping-a-fork-up-to-date" aria-label="Link to heading 'Keeping a fork up to date'" class="anchor"></a></h2>
+<p>On a fork's front page, a line compares its default branch with the
+original's: up to date, or how many commits it's ahead and behind. If
+it's behind, <strong>Sync fork</strong> brings it forward, without a clone on your side.</p>
+<p>If both have their own commits, the branch can't simply move forward:
+<strong>Sync fork</strong> explains this and offers to discard your commits (it asks
+for your password again). To keep them, push them to another branch
+first. Branch protection in your fork applies to syncing like to a push.</p>
+<p>With a token (<code>repo:write</code>), <code>POST /api/v1/repos/{owner}/{repo}/sync</code>
+with <code>{"branch": "main"}</code> does the same; it answers <code>fast_forwarded</code>,
+<code>created</code>, <code>up_to_date</code>, or <code>diverged</code> with the counts, and
+<code>"discard": true</code> drops your commits. <code>GET .../fork</code> includes <code>ahead</code>
+and <code>behind</code> for the default branch.</p>
+<h2 id="what-a-fork-contains">What a fork contains<a href="#what-a-fork-contains" aria-label="Link to heading 'What a fork contains'" class="anchor"></a></h2>
+<p>Only branches and tags. The fork doesn't depend on the original: it keeps
+working when the original is cleaned up or deleted. Commits that were only
+on branches the original deleted aren't copied, except those of recent
+large pushes until the fork's own maintenance removes them.</p>
+<h2 id="losing-access-to-the-original">Losing access to the original<a href="#losing-access-to-the-original" aria-label="Link to heading 'Losing access to the original'" class="anchor"></a></h2>
+<p>A fork of a private (or internal) repository depends on your access to
+it. If you lose read access to the original, your fork is locked: nobody
+but site administrators can see or clone it. When you get access back,
+the fork is unlocked as it was. A fork that stays locked for the
+instance's retention period (7 days by default) is deleted. A fork of a
+public repository is never locked, even if the original later becomes
+private. For a fork in an organization, the access of whoever created it
+counts.</p>
+<h2 id="merge-requests-from-a-fork">Merge requests from a fork<a href="#merge-requests-from-a-fork" aria-label="Link to heading 'Merge requests from a fork'" class="anchor"></a></h2>
+<p>To propose your fork's changes to the original, open a merge request
+against the original with your fork as the source. Clone your fork (here
+Bob's fork <code>bob/demo</code> of <code>alice/demo</code>):</p>
+<pre tabindex="0"><code class="language-sh">git clone https://slath.example/bob/demo.git bob-demo &amp;&amp; cd bob-demo
+</code></pre>
+<pre tabindex="0"><code class="language-sh">jj git clone https://slath.example/bob/demo.git bob-demo &amp;&amp; cd bob-demo
+</code></pre>
+<p>Then commit your work and push it:</p>
+<pre tabindex="0"><code class="language-sh">git switch -c my-topic
+git add -A &amp;&amp; git commit -m "Add notes"
+git push origin my-topic
+</code></pre>
+<pre tabindex="0"><code class="language-sh">jj commit -m "Add notes"
+jj bookmark create my-topic -r @-
+jj git push --bookmark my-topic
+</code></pre>
+<p>When you push a
+branch to your fork, Git (or jj) prints a link to the original's compare
+page with your fork preselected; the fork's front page shows the same
+link in its "Recently pushed" banner, and <strong>Contribute</strong> next to
+"Forked from" opens the compare page too. There, <strong>From</strong> picks the
+repository (your forks of the network that you can push to) and
+<strong>Merge</strong> its branch. Through the API:</p>
+<pre tabindex="0"><code class="language-text">POST /api/v1/repos/&lt;owner&gt;/&lt;repo&gt;/merge-requests
+{"source_repo": "&lt;you&gt;/&lt;fork&gt;", "source_branch": "my-topic", "title": "…"}
+</code></pre>
+<p>The source can be any repository of the same fork network that you can
+push to. The original receives only the history of that branch, never
+your fork's other branches; until you open the merge request it holds
+nothing of your fork. Each push to the branch adds a revision, and the
+merge request merges like any other. Merging leaves your fork's branch
+as it is.</p>
+<p>If your fork is less visible than the original (a private fork of a
+public repository, for example), everyone who can read the original will
+be able to read the merge request's commits. Slath asks you to confirm
+that (<strong>Make these commits readable here</strong> on the compare page,
+<code>"publish_source": true</code> in the API) and notes it in the merge request's
+timeline.</p>
+<p>The original's push protection checks every push to the branch before
+the merge request takes it over, even if your fork has push protection
+off. If it finds a possible secret, the merge request stays at its
+previous revision and shows what was found. Remove the secret and push
+again, or ask a writer of the original to allow it if it isn't one.</p>
+<h3 id="edits-by-maintainers">Edits by maintainers<a href="#edits-by-maintainers" aria-label="Link to heading 'Edits by maintainers'" class="anchor"></a></h3>
+<p>A merge request from a fork allows edits by maintainers unless you turn
+it off: uncheck <strong>Allow edits by maintainers</strong> on the compare page, use
+<strong>More → Stop allowing edits by maintainers</strong> on the merge request, or
+send <code>"allow_maintainer_edits": false</code> through the API. While it's open, anyone who can write to
+the original can then push to your merge request's branch in your fork,
+for example to fix a typo before merging. They can only update that one
+branch: they can't delete it, push other branches or tags, or change
+anything once the merge request is closed or merged. Only someone who
+can push to your fork can change the setting, and each such push is
+recorded in the original's audit log.</p>
+<p>The right only goes from the original to forks of it: a merge request
+from the original into your fork gives you no access to the original.</p>
+<h3 id="the-branch-mrn-in-the-original">The branch <code>mr/&lt;n&gt;</code> in the original<a href="#the-branch-mrn-in-the-original" aria-label="Link to heading 'The branch mr/&lt;n&gt; in the original'" class="anchor"></a></h3>
+<p>While a merge request from a fork is open, the original shows it as the
+branch <code>mr/&lt;n&gt;</code> (<code>mr/12</code> for merge request 12) at its latest revision.
+That way reviewers check it out, and maintainers push edits to it, with
+Git or jj and without adding your fork as a remote. It appears in the
+fetches of its requested reviewers and assignees, of anyone who used
+<strong>Check out</strong> on it, and, for pushing, of those who may edit it; everyone
+else's fetches don't show it, and it disappears when the merge request
+is closed or merged. That's to keep fetches tidy, not to keep it secret:
+whoever can read the original can read the merge request's commits.</p>
+<p>A push to <code>mr/&lt;n&gt;</code> by someone who may edit the merge request as a
+maintainer updates your branch in your fork, by compare-and-swap: if you
+pushed meanwhile, their push is refused or its output says it didn't
+reach the fork, and they fetch and try again. Nobody else can push to
+<code>mr/&lt;n&gt;</code>, and no other branches can be created under <code>mr/</code>.</p>
+<p>Git sends credentials over HTTPS only when a server asks, so fetches of
+a public or internal original are anonymous and don't show <code>mr/&lt;n&gt;</code>.
+Use the address that always asks, <code>https://slath.example/-/auth/&lt;owner&gt;/&lt;repo&gt;.git</code>,
+which <strong>Check out</strong> and <code>POST …/merge-requests/{n}/checkout</code> give you;
+over SSH it works with the usual address.</p>
+<p>On the merge request, <strong>Check out → Check out mr/</strong> adds the branch to
+your fetches; the menu then shows the commands. For merge request 12 in
+your clone of the original:</p>
+<pre tabindex="0"><code class="language-sh">git fetch https://slath.example/-/auth/alice/demo.git mr/12:mr/12 &amp;&amp; git switch mr/12
+</code></pre>
+<pre tabindex="0"><code class="language-sh">jj git remote set-url origin https://slath.example/-/auth/alice/demo.git &amp;&amp; jj git fetch --branch mr/12 &amp;&amp; jj bookmark track mr/12@origin &amp;&amp; jj new mr/12
+</code></pre>
+<p>To edit it as a maintainer, commit and push the branch; the fork's branch
+follows:</p>
+<pre tabindex="0"><code class="language-sh">git add -A &amp;&amp; git commit -m "Fix a typo"
+git push https://slath.example/-/auth/alice/demo.git mr/12
+</code></pre>
+<pre tabindex="0"><code class="language-sh">jj commit -m "Fix a typo"
+jj bookmark set mr/12 -r @-
+jj git push --bookmark mr/12
+</code></pre>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../user/bots.html">Previous: Bots</a><a rel="next" href="../user/merge-requests.html">Next: Merge requests</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html" aria-current="page">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

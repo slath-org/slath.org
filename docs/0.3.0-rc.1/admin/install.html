@@ -1,0 +1,314 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Installing Slath · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="installing-slath">Installing Slath<a href="#installing-slath" aria-label="Link to heading 'Installing Slath'" class="anchor"></a></h1>
+<p>Slath is one binary, <code>slath</code>. It needs PostgreSQL (15 or newer), Git (before
+1.0, the newest stable release; <code>slath config check</code> tells you if yours is too
+old), and OpenSSH for Git over SSH. There are two supported ways to run it:
+<a href="#docker-compose">containers with Docker Compose</a> (or <a href="#podman">Podman</a>) and
+<a href="#systemd">systemd on a Linux host</a>.</p>
+<h2 id="docker-compose">Docker Compose<a href="#docker-compose" aria-label="Link to heading 'Docker Compose'" class="anchor"></a></h2>
+<p><code>deploy/compose/</code> runs PostgreSQL, Slath, and sshd from the published image
+<code>ghcr.io/slath-org/slath</code>, which contains a pinned Git and OpenSSH. Nothing
+is built on your host. The <code>sshd</code> container mounts only the IPC socket's
+volume, not the data volume; see <a href="#users-and-permissions">Users and permissions</a>.</p>
+<ol>
+<li>
+<p>Get the four files of the release you install (or the signed
+<code>slath-compose-&lt;version&gt;.tar.gz</code> from the release; see
+<a href="verify.html">Verifying a release</a>):</p>
+<pre tabindex="0"><code class="language-sh">mkdir slath &amp;&amp; cd slath
+for f in compose.yml Caddyfile postgres-init.sh .env.example; do
+    curl -fsSLO "https://raw.githubusercontent.com/slath-org/slath/v0.3.0/deploy/compose/$f"
+done
+cp .env.example .env
+</code></pre>
+</li>
+<li>
+<p>Set the two values in <code>.env</code>: <code>SLATH_DB_PASSWORD</code> (any long random
+string, for example from <code>openssl rand -hex 24</code>) and <code>SLATH_PUBLIC_URL</code>,
+the address people use. Everything else has a default; the file lists
+the optional settings.</p>
+</li>
+<li>
+<p>Start everything:</p>
+<pre tabindex="0"><code class="language-sh">docker compose up -d
+</code></pre>
+<p>On first start, the <code>init</code> service creates the master key in the data
+volume, and <code>slath</code> sets up the database.</p>
+</li>
+<li>
+<p>Create the first administrator (use your own name; names such as
+<code>admin</code> and <code>root</code> are reserved). A random password is printed once:</p>
+<pre tabindex="0"><code class="language-sh">docker compose run --rm slath admin create-user --admin \
+    --username ada --email ada@example.org
+</code></pre>
+</li>
+<li>
+<p>Open <code>SLATH_PUBLIC_URL</code> (by default <a href="http://localhost:3000">http://localhost:3000</a>) and sign
+in. Administration needs two-factor authentication: set it up under
+<strong>Settings → Security</strong>, then sign out and in again with a code (see
+<a href="accounts.html">Accounts and sign-in</a>). Create a repository. Clone it over
+HTTPS with a personal access token as the password, or over SSH after
+adding your key under <strong>Settings → SSH keys</strong>:</p>
+<pre tabindex="0"><code class="language-sh">git clone http://localhost:3000/ada/project.git
+git clone ssh://git@localhost:2222/ada/project.git
+</code></pre>
+</li>
+<li>
+<p>Back up the master key now and keep it apart from your backups:</p>
+<pre tabindex="0"><code class="language-sh">docker compose cp slath:/var/lib/slath/master.key ./master.key
+</code></pre>
+</li>
+</ol>
+<p>To update, set <code>SLATH_VERSION</code> in <code>.env</code> to the new release (or get the
+new release's <code>compose.yml</code>) and run <code>docker compose up -d</code>; see
+<a href="upgrading.html">Upgrading</a>. Slath backs up before each update into the
+<code>backups</code> volume and keeps the newest two.</p>
+<h3 id="tls">TLS<a href="#tls" aria-label="Link to heading 'TLS'" class="anchor"></a></h3>
+<p>For a public server, keep HTTP published on <code>127.0.0.1</code> (the default) and
+let the <code>tls</code> profile run Caddy in front, which gets a certificate for the
+host in <code>SLATH_PUBLIC_URL</code>:</p>
+<pre tabindex="0"><code class="language-sh"># in .env
+SLATH_PUBLIC_URL=https://git.example.org
+</code></pre>
+<pre tabindex="0"><code class="language-sh">docker compose --profile tls up -d
+</code></pre>
+<p>On a private network, set <code>SLATH_TLS=internal</code> to use Caddy's own CA (the
+clients must trust its root certificate, printed by <code>docker compose exec caddy cat /data/caddy/pki/authorities/local/root.crt</code>), or
+<code>SLATH_TLS=files</code> with your own <code>cert.pem</code> and <code>key.pem</code> in <code>./certs</code>
+(<code>SLATH_CERTS_DIR</code>). <code>slath doctor</code> warns before a certificate expires.</p>
+<p>Caddy has a fixed address in the Compose network, and Slath trusts exactly
+that address to report the client's address (<code>X-Forwarded-For</code>). If the
+network's default subnet <code>172.29.79.0/24</code> is taken on your host, set
+<code>SLATH_SUBNET</code>, <code>SLATH_DYNAMIC_RANGE</code>, and <code>SLATH_PROXY_IP</code> in <code>.env</code>.</p>
+<h3 id="health-checks">Health checks<a href="#health-checks" aria-label="Link to heading 'Health checks'" class="anchor"></a></h3>
+<p>Each container reports its health to Docker (and to Podman): <code>postgres</code>
+when it accepts connections, <code>slath</code> when <code>/-/readyz</code> answers (database,
+data directory, and background workers are fine), and <code>sshd</code> when it greets
+SSH clients. The checks run <code>slath healthcheck</code> inside the container, so
+the image needs no curl.</p>
+<pre tabindex="0"><code class="language-sh">docker compose ps              # STATUS shows (healthy) or (unhealthy)
+docker events --filter event=health_status
+</code></pre>
+<p>A first start that applies an update may take a while; the check allows
+ten minutes before it counts failures. For monitoring from outside,
+<code>GET /-/readyz</code> answers 200 when Slath can serve and 503 when it can't, and
+<code>slath doctor --output json</code> explains why.</p>
+<h3 id="configuration">Configuration<a href="#configuration" aria-label="Link to heading 'Configuration'" class="anchor"></a></h3>
+<p>The image reads <code>/etc/slath/slath.toml</code> (see <code>deploy/docker/slath.toml</code>).
+Override any key with an environment variable <code>SLATH__&lt;SECTION&gt;__&lt;KEY&gt;</code>, or
+mount your own file there. <code>docker compose exec slath slath config check</code>
+validates the result.</p>
+<h2 id="podman">Podman<a href="#podman" aria-label="Link to heading 'Podman'" class="anchor"></a></h2>
+<p>The same Compose file runs on rootless Podman (4.7 or newer; tested with
+Podman 6.1 and Docker Compose 5.6 as its provider). Every step under
+<a href="#docker-compose">Docker Compose</a> applies, with <code>podman compose</code> in place
+of <code>docker compose</code>. Set up once, as the user who runs Slath:</p>
+<pre tabindex="0"><code class="language-sh">systemctl --user enable --now podman.socket   # the API that Compose talks to
+loginctl enable-linger "$USER"                # keep running after logout
+systemctl --user enable podman-restart.service  # start the containers at boot
+</code></pre>
+<p>Then, in the directory with the four files:</p>
+<pre tabindex="0"><code class="language-sh">podman compose up -d
+podman compose ps            # (healthy) next to each service
+</code></pre>
+<ul>
+<li><strong>Compose provider:</strong> <code>podman compose</code> runs <code>docker-compose</code> (Compose v2)
+if it's installed, else <code>podman-compose</code>. Use Compose v2: it waits for
+<code>postgres</code> to be healthy before starting <code>slath</code>, as the file expects.</li>
+<li><strong>Health checks:</strong> Podman runs them with systemd timers of your user
+session, so they need <code>systemd --user</code> (lingering keeps it running).
+<code>podman healthcheck run &lt;container&gt;</code> runs one by hand, and <code>podman events --filter event=health_status</code> follows changes.</li>
+<li><strong>Ports:</strong> rootless Podman can't bind ports below 1024. HTTP (<code>3000</code>) and
+SSH (<code>2222</code>) are fine; for the <code>tls</code> profile's <code>80</code> and <code>443</code>, allow them
+with <code>sudo sysctl net.ipv4.ip_unprivileged_port_start=80</code> (and in
+<code>/etc/sysctl.d/</code>), or put the host's own reverse proxy in front.</li>
+<li><strong>SELinux:</strong> the Compose file labels its bind mounts (<code>Caddyfile</code>,
+<code>postgres-init.sh</code>) for container access, so it works with SELinux
+enforcing.</li>
+<li><strong>Volumes and users:</strong> the containers run as their own users inside your
+user namespace; volumes live under <code>~/.local/share/containers/storage/</code>.
+Back them up as described in <a href="backup.html">Backup</a>, not by copying that
+directory while running.</li>
+<li><strong>If networks fail to start</strong> with <code>netavark: nftables error: "nft" did not return successfully</code>, the host's nftables doesn't work with
+netavark's firewall rules. Rootless setups don't need them: set
+<code>firewall_driver = "none"</code> in the <code>[network]</code> section of
+<code>~/.config/containers/containers.conf</code>.</li>
+</ul>
+<h2 id="systemd">systemd<a href="#systemd" aria-label="Link to heading 'systemd'" class="anchor"></a></h2>
+<p>On a Linux host with systemd, <code>slath setup</code> does the installation.</p>
+<ol>
+<li>
+<p>Install PostgreSQL (15 or newer, with the contrib modules; on
+RHEL-based systems <code>postgresql-contrib</code>), Git, and OpenSSH from your
+distribution, and start PostgreSQL.</p>
+</li>
+<li>
+<p>Install the <code>slath</code> binary root-owned (sshd only runs a key lookup
+that nobody else can write). The release binary needs glibc 2.41 or
+newer (Debian 13, Ubuntu 25.04, Fedora 42, or later):</p>
+<pre tabindex="0"><code class="language-sh">install -m 0755 slath /usr/local/bin/slath
+</code></pre>
+<p>Download it from the release and verify its signature first
+(<a href="verify.html">Verifying a release</a>). Until release binaries are
+published, build it (<code>(cd web &amp;&amp; npm ci &amp;&amp; npm run build) &amp;&amp; cargo build --release --locked -p slath</code>, see
+<a href="../dev/setup.html">docs/dev/setup.md</a>) or copy it out of the container
+image (<code>/usr/bin/slath</code>).</p>
+</li>
+<li>
+<p>See what setup would do, then do it:</p>
+<pre tabindex="0"><code class="language-sh">slath setup --check --public-url https://git.example.org
+slath setup --public-url https://git.example.org \
+    --admin-username ada --admin-email ada@example.org
+</code></pre>
+<p>It creates the service account <code>slath</code> and the SSH login <code>git</code> (see
+<a href="#users-and-permissions">Users and permissions</a>), <code>/etc/slath</code> with the
+master key, the database URL file with a random password, and the
+configuration, the database role and database (as the local
+<code>postgres</code> user, or through <code>--pg-admin-url</code>; otherwise it prints the
+two SQL statements to run), the systemd unit and the sshd drop-in. Then
+it checks the result, sets up the schema, creates the administrator
+(the password is printed once), starts <code>slath.service</code>, and reloads
+sshd. Without the flags, it asks.</p>
+<p>Running it again changes nothing unless something drifted: it repairs
+missing files and wrong owners or modes, and never rewrites your
+configuration, master key, or database URL.</p>
+</li>
+<li>
+<p>Back up <code>/etc/slath/master.key</code> somewhere safe, apart from your
+backups.</p>
+</li>
+<li>
+<p><strong>Reverse proxy:</strong> forward HTTPS for your public URL to
+<code>127.0.0.1:3000</code> and list the proxy's own address in
+<code>server.trusted_proxies</code> (the default trusts only <code>127.0.0.1</code> and <code>::1</code>).</p>
+</li>
+<li>
+<p>Sign in, set up two-factor authentication under <strong>Settings → Security</strong>
+(administration needs it), sign in again with a code, create a
+repository, and clone it over HTTPS and SSH.</p>
+</li>
+</ol>
+<p>If a <code>git</code> user already exists for something else, set up by hand with
+another name: the files setup writes are <code>deploy/systemd/</code> and
+<code>deploy/sshd/slath.conf</code> in the source; use your name in
+<code>storage.socket_group</code>, the service's <code>SupplementaryGroups=</code>, and the
+sshd drop-in.</p>
+<h2 id="users-and-permissions">Users and permissions<a href="#users-and-permissions" aria-label="Link to heading 'Users and permissions'" class="anchor"></a></h2>
+<p>Slath keeps the server and the SSH login apart at the operating-system level:</p>
+<ul>
+<li><code>slath</code> runs <code>slath serve</code>, owns the data directory, and reads the
+configuration, the database URL, and the master key. Git runs as <code>slath</code>,
+for HTTPS and SSH alike.</li>
+<li><code>git</code> is the login sshd runs <code>slath ssh-keys</code> and <code>slath ssh-serve</code> as. It
+has its own UID and isn't in group <code>slath</code>. Its group may connect to the
+IPC socket (<code>/run/slath/slath.sock</code>, mode 0660 in a 0710 directory, both
+handed to <code>storage.socket_group</code> by <code>slath serve</code>) and nothing else: the
+helpers send the key lookup and the SSH session to the server, which
+authorizes it and runs Git on the session's stdin and stdout.</li>
+</ul>
+<p>So a fault in the helpers, or anything else running as <code>git</code>, doesn't
+expose the database credentials, the master key, or the repositories. With
+Docker Compose, the <code>sshd</code> container doesn't have them either. Keep it that
+way:</p>
+<ul>
+<li>Don't add anyone but <code>slath</code> to group <code>git</code>, and let nothing but sshd's
+helpers run as <code>git</code>: whoever can open the socket can name any SSH key to
+the server.</li>
+<li>Don't add <code>git</code> to group <code>slath</code>, and don't make the data directory,
+<code>/etc/slath</code>, or the secret files readable by group <code>git</code> or by everyone.
+<code>slath config check</code> reports it if they are.</li>
+<li>Pass the database URL with <code>database.url_file</code> (mode 0640, group <code>slath</code>)
+rather than in a configuration file others can read.</li>
+<li>The <code>slath</code> user must be a member of <code>storage.socket_group</code>, or <code>slath serve</code> can't hand the socket to it and won't start.</li>
+</ul>
+<h2 id="next-steps">Next steps<a href="#next-steps" aria-label="Link to heading 'Next steps'" class="anchor"></a></h2>
+<ul>
+<li><code>slath doctor</code> checks the installation and says what to fix
+(<a href="doctor.html">Diagnosing an installation</a>).</li>
+<li><a href="backup.html">Backup and restore</a></li>
+<li><a href="upgrading.html">Upgrading</a></li>
+<li><code>slath fsck</code> checks repositories against the database; <code>--reconcile</code>
+repairs refs changed outside Slath.</li>
+<li>Metrics are served on <code>server.metrics_listen</code> (Prometheus format); keep
+that address private.</li>
+</ul>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../admin/email.html">Previous: Email</a><a rel="next" href="../admin/appearance.html">Next: Instance logo</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html" aria-current="page">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

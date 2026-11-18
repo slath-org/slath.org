@@ -1,0 +1,355 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Bots · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="bots">Bots</h1>
+<section class="api-op" aria-labelledby="get_instance_freeze">
+<h2 id="get_instance_freeze"><code>GET /api/v1/admin/bot-freeze</code></h2>
+<p>Whether every bot of the instance is frozen (site administrators;
+`admin`).</p>
+<p>Token scopes: <code>admin</code>.</p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="freeze_instance">
+<h2 id="freeze_instance"><code>PUT /api/v1/admin/bot-freeze</code></h2>
+<p>Freezes every bot of the instance.</p>
+<p>Token scopes: <code>admin</code>.</p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="unfreeze_instance">
+<h2 id="unfreeze_instance"><code>DELETE /api/v1/admin/bot-freeze</code></h2>
+<p>Unfreezes the instance&#39;s bots.</p>
+<p>Token scopes: <code>admin</code>.</p>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_bot">
+<h2 id="get_bot"><code>GET /api/v1/bots/{name}</code></h2>
+<p>A bot you manage (`user:read`).</p>
+<p>Token scopes: <code>user:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_bot_keys">
+<h2 id="list_bot_keys"><code>GET /api/v1/bots/{name}/keys</code></h2>
+<p>A bot&#39;s SSH keys (`user:read`).</p>
+<p>Token scopes: <code>user:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="add_bot_key">
+<h2 id="add_bot_key"><code>POST /api/v1/bots/{name}/keys</code></h2>
+<p>Adds an SSH key to a bot (`user:write`).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>NewSshKey</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="remove_bot_key">
+<h2 id="remove_bot_key"><code>DELETE /api/v1/bots/{name}/keys/{id}</code></h2>
+<p>Removes one of a bot&#39;s SSH keys (`user:write`).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="bot_overview">
+<h2 id="bot_overview"><code>GET /api/v1/bots/{name}/overview</code></h2>
+<p>A bot&#39;s open merge requests, recent pushes, next token expiry, and
+rate-limit use (`user:read`; its managers and site administrators).</p>
+<p>Token scopes: <code>user:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="start_bot">
+<h2 id="start_bot"><code>POST /api/v1/bots/{name}/start</code></h2>
+<p>Re-enables a stopped bot, without credentials: create new tokens and
+keys for it (`user:write`). A bot suspended by an administrator or with
+its owner stays suspended (409).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>409</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="stop_bot">
+<h2 id="stop_bot"><code>POST /api/v1/bots/{name}/stop</code></h2>
+<p>Stops a bot at once: it&#39;s suspended, its tokens are revoked, its SSH
+keys removed, and its pushes refused (`user:write`; its managers and
+site administrators).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_bot_tokens">
+<h2 id="list_bot_tokens"><code>GET /api/v1/bots/{name}/tokens</code></h2>
+<p>A bot&#39;s tokens, never the secrets (`user:read`).</p>
+<p>Token scopes: <code>user:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_bot_token">
+<h2 id="create_bot_token"><code>POST /api/v1/bots/{name}/tokens</code></h2>
+<p>Bot tokens can&#39;t be created through the API, only on the bot&#39;s settings
+page in sudo mode or with `slath admin create-bot`.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="revoke_bot_token">
+<h2 id="revoke_bot_token"><code>DELETE /api/v1/bots/{name}/tokens/{id}</code></h2>
+<p>Revokes one of a bot&#39;s tokens (`user:write`).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>id</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>204</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="get_org_freeze">
+<h2 id="get_org_freeze"><code>GET /api/v1/orgs/{org}/bot-freeze</code></h2>
+<p>Whether the organization&#39;s bots are frozen (its owners; `user:write`).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="freeze_org">
+<h2 id="freeze_org"><code>PUT /api/v1/orgs/{org}/bot-freeze</code></h2>
+<p>Freezes every bot the organization owns: their tokens and SSH keys are
+refused and their pushes rejected until unfrozen; nothing is revoked.</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="unfreeze_org">
+<h2 id="unfreeze_org"><code>DELETE /api/v1/orgs/{org}/bot-freeze</code></h2>
+<p>Unfreezes the organization&#39;s bots; their credentials work again.</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_org_bots">
+<h2 id="list_org_bots"><code>GET /api/v1/orgs/{org}/bots</code></h2>
+<p>An organization&#39;s bots (organization owners, `user:read`).</p>
+<p>Token scopes: <code>user:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_org_bot">
+<h2 id="create_org_bot"><code>POST /api/v1/orgs/{org}/bots</code></h2>
+<p>Creates a bot owned by an organization (organization owners, `user:write`).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>org</code></td><td>path</td><td>yes</td></tr>
+</tbody></table></div>
+<p>Body: <code>NewBot</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>404</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="list_user_bots">
+<h2 id="list_user_bots"><code>GET /api/v1/user/bots</code></h2>
+<p>The authenticated person&#39;s bots (`user:read`).</p>
+<p>Token scopes: <code>user:read</code>.</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Parameters"><table><thead><tr><th scope="col">Parameter</th><th scope="col">In</th><th scope="col">Required</th></tr></thead><tbody>
+<tr><td><code>limit</code></td><td>query</td><td>no</td></tr>
+<tr><td><code>cursor</code></td><td>query</td><td>no</td></tr>
+</tbody></table></div>
+<dl class="api-responses">
+<dt><code>200</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+</dl>
+</section>
+<section class="api-op" aria-labelledby="create_user_bot">
+<h2 id="create_user_bot"><code>POST /api/v1/user/bots</code></h2>
+<p>Creates a bot owned by the authenticated person (`user:write`).</p>
+<p>Token scopes: <code>user:write</code>.</p>
+<p>Body: <code>NewBot</code></p>
+<dl class="api-responses">
+<dt><code>201</code></dt><dd></dd>
+<dt><code>401</code></dt><dd></dd>
+<dt><code>403</code></dt><dd></dd>
+<dt><code>422</code></dt><dd></dd>
+</dl>
+</section>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../api/index.html">Previous: API reference</a><a rel="next" href="../api/issues.html">Next: Issues</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html" aria-current="page">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

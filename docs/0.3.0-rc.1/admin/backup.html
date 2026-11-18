@@ -1,0 +1,182 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Backup and restore · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="backup-and-restore">Backup and restore<a href="#backup-and-restore" aria-label="Link to heading 'Backup and restore'" class="anchor"></a></h1>
+<h2 id="create-a-backup">Create a backup<a href="#create-a-backup" aria-label="Link to heading 'Create a backup'" class="anchor"></a></h2>
+<pre tabindex="0"><code class="language-sh">slath backup create --output /var/backups/slath/2026-11-01
+</code></pre>
+<p>The server keeps running. The command writes into an empty (or new)
+directory, readable only by the Slath user:</p>
+<div class="docs-table" tabindex="0" role="region" aria-label="Table"><table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>manifest.json</code></td>
+<td>Versions, entity counts, tables, and a SHA-256 checksum for every file</td>
+</tr>
+<tr>
+<td><code>config.toml</code></td>
+<td>Your configuration, with passwords, secrets, and tokens removed</td>
+</tr>
+<tr>
+<td><code>db/*.copy</code></td>
+<td>One consistent snapshot of the database</td>
+</tr>
+<tr>
+<td><code>repos/&lt;id&gt;.git/</code></td>
+<td>Refs and objects of every repository</td>
+</tr>
+<tr>
+<td><code>trash/&lt;id&gt;.git/</code></td>
+<td>The same for deleted repositories that aren't purged yet</td>
+</tr>
+<tr>
+<td><code>blobs/&lt;aa&gt;/&lt;sha256&gt;</code></td>
+<td>Attachments and uploaded avatars, named by their SHA-256</td>
+</tr>
+</tbody>
+</table></div>
+<p>The database is read in a single snapshot, and Git refs are copied before
+objects, so every copied ref points to objects that are in the backup.
+Pushes that land while the backup runs may or may not be included; a restore
+reconciles the database with the refs it finds. Attachment and avatar files
+are copied after the snapshot; unused files are only deleted after
+<code>limits.blob_grace_period</code> (24 hours by default), so every file the snapshot
+refers to is still there.</p>
+<p><code>--include-secrets</code> keeps passwords in the copied configuration. Use it only
+if the backup is stored as safely as the server itself.</p>
+<p><strong>The master key is never part of a backup.</strong> Back up the file named by
+<code>secrets.master_key_file</code> (or <code>&lt;data_dir&gt;/instance.key</code>) separately and keep
+it apart from the backups. Without it, a restored instance signs everyone
+out and can't decrypt stored secrets.</p>
+<p>No <code>pg_dump</code> is needed, so the PostgreSQL client version never has to match
+the server.</p>
+<h2 id="scheduled-backups">Scheduled backups<a href="#scheduled-backups" aria-label="Link to heading 'Scheduled backups'" class="anchor"></a></h2>
+<p>Slath can back itself up every day:</p>
+<pre tabindex="0"><code class="language-toml">[backup]
+schedule = "03:15"   # daily, in UTC
+keep = 7             # newest scheduled backups to keep
+</code></pre>
+<p>The server writes <code>scheduled-&lt;time&gt;</code> backups into <code>&lt;data_dir&gt;/backups</code>
+(the <code>backups</code> volume in Compose) while it keeps serving, and then deletes
+the oldest scheduled ones beyond <code>keep</code>. Other backups there, such as the
+pre-upgrade ones, aren't touched by this. A failed run leaves no partial
+backup; the admin <strong>Health</strong> page and <code>slath doctor</code> report it, and the
+next day's run tries again.</p>
+<h3 id="copy-backups-off-the-host">Copy backups off the host<a href="#copy-backups-off-the-host" aria-label="Link to heading 'Copy backups off the host'" class="anchor"></a></h3>
+<p>Backups on the same disk don't survive the loss of that disk or host. Copy
+them somewhere else, for example nightly after the scheduled backup:</p>
+<pre tabindex="0"><code class="language-sh">rsync -a --delete /var/lib/slath/backups/ backup-host:/srv/slath-backups/
+# or: restic -r sftp:backup-host:/srv/restic backup /var/lib/slath/backups
+</code></pre>
+<p>With Compose, the volume is <code>slath_backups</code>; <code>docker run --rm -v slath_backups:/b:ro -v "$PWD":/out alpine tar -C /b -czf /out/backups.tgz .</code>
+copies it out. Keep the master key apart from these copies, and test a
+restore from time to time.</p>
+<h2 id="restore">Restore<a href="#restore" aria-label="Link to heading 'Restore'" class="anchor"></a></h2>
+<ol>
+<li>
+<p>Install the same or a newer Slath release.</p>
+</li>
+<li>
+<p>Create an empty database and point a configuration file at it and at an
+empty <code>data_dir</code>. Copy the master key into place.</p>
+</li>
+<li>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-sh">slath backup restore --input /var/backups/slath/2026-11-01
+</code></pre>
+</li>
+</ol>
+<p>The restore first checks the whole backup and stops without changing
+anything if any file is missing, unlisted, a link, outside the backup, or
+fails its checksum. It then loads the database, migrates it to the current
+schema, recreates every repository with Slath's own Git configuration
+(repository config and hooks are never taken from a backup), copies refs and
+objects, copies attachment and avatar files (each must match its name),
+checks each repository's connectivity, reconciles the database with
+the restored refs, and prints the counts next to those in the manifest.</p>
+<p>The restore refuses to run against a database or data directory that isn't
+empty.</p>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../admin/accounts.html">Previous: Accounts and sign-in</a><a rel="next" href="../admin/doctor.html">Next: Diagnosing an installation</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html" aria-current="page">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

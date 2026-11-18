@@ -1,0 +1,114 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Instance logo · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="instance-logo">Instance logo<a href="#instance-logo" aria-label="Link to heading 'Instance logo'" class="anchor"></a></h1>
+<p>Every page shows a logo in its header and as the browser tab's icon: the
+Slath logo, until a site administrator uploads the instance's own under
+<strong>Administration → Appearance</strong>. There's one image for the light theme
+and one for the dark theme; upload either or both. Pages pick the one for
+the viewer's theme, or the device's when the viewer follows it.</p>
+<h2 id="uploading">Uploading<a href="#uploading" aria-label="Link to heading 'Uploading'" class="anchor"></a></h2>
+<ul>
+<li><strong>Formats:</strong> SVG, PNG, or WebP, at most <code>limits.logo_max_bytes</code>
+(1 MiB by default). The header shows the logo in a square, so a square
+image fits best; other shapes are fitted inside it.</li>
+<li><strong>SVG</strong> files are stored as uploaded, but only if they just draw:
+shapes, paths, text, gradients, groups, clip paths, and masks, with their
+presentation attributes and inline <code>style</code>. Anything that could run or
+load something is refused with the reason: scripts, event handlers
+(<code>onload</code>, …), <code>&lt;style&gt;</code> sheets, <code>&lt;foreignObject&gt;</code>, <code>&lt;image&gt;</code>, links,
+animation, <code>href</code> or <code>url()</code> values that point outside the file, and
+DTDs or entities. Editors' own markup (for example Inkscape's
+<code>inkscape:</code> attributes) is refused too; save as a plain SVG (in Inkscape,
+<strong>Plain SVG</strong>, or run it through <code>svgo</code>).</li>
+<li><strong>PNG and WebP</strong> images are decoded and encoded again as PNG, scaled to
+at most 512 pixels on the longer side. Only the pixels survive: metadata
+and anything appended to the file are dropped.</li>
+</ul>
+<p>Logos are served from <code>/-/logos/&lt;sha256&gt;.svg</code> (or <code>.png</code>) on the instance
+itself, with a sandboxing content security policy; pages never load
+anything from elsewhere.</p>
+<h2 id="going-back">Going back<a href="#going-back" aria-label="Link to heading 'Going back'" class="anchor"></a></h2>
+<p><strong>Use the Slath logo again</strong> removes both uploaded images. Uploading,
+and going back, are recorded in the audit log (<code>admin.logo.set</code>,
+<code>admin.logo.reset</code>), and need a recent sign-in like other administration
+changes.</p>
+<p>Backups include the logos; a restored instance shows the logo it had.</p>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../admin/install.html">Previous: Installing Slath</a><a rel="next" href="../admin/push-protection.html">Next: Push protection</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html" aria-current="page">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>

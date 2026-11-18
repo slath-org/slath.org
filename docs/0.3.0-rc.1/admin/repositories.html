@@ -1,0 +1,421 @@
+<!doctype html>
+<!-- SPDX-FileCopyrightText: 2026 Erich Seifert <dev@erichseifert.de> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Repositories · Slath 0.3.0-rc.1 documentation</title>
+<link rel="stylesheet" href="../_theme/tokens.css">
+<link rel="stylesheet" href="../_theme/docs.css">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="../_theme/logo-dark.svg" media="(prefers-color-scheme: dark)">
+<script src="../_theme/docs.js" defer></script>
+</head>
+<body>
+<a class="docs-skip" href="#content">Skip to the content</a>
+<header class="docs-header">
+  <a class="docs-home" href="../index.html"><img class="docs-logo docs-logo-light" src="../_theme/logo-light.svg" alt="" width="24" height="24"><img class="docs-logo docs-logo-dark" src="../_theme/logo-dark.svg" alt="" width="24" height="24">Slath documentation</a>
+  <a class="docs-contents-link" href="#docs-nav">Contents</a>
+  <p class="docs-version"><a href="../../versions.html" data-versions="../../versions.json" data-current="0.3.0-rc.1">Version 0.3.0-rc.1: other versions</a></p>
+</header>
+<div class="docs-layout">
+<main id="content" class="docs-content">
+<h1 id="repositories">Repositories<a href="#repositories" aria-label="Link to heading 'Repositories'" class="anchor"></a></h1>
+<h2 id="importing-from-another-server">Importing from another server<a href="#importing-from-another-server" aria-label="Link to heading 'Importing from another server'" class="anchor"></a></h2>
+<p><strong>Import a repository</strong> (<code>/-/import</code>, linked from the home page and the
+new-repository page) creates a repository and copies all branches and
+tags of a Git repository on another server into it. With a token
+(<code>repo:write</code>), <code>POST /api/v1/repos/import</code> does the same and answers
+with a report that <code>GET /api/v1/repos/{owner}/{repo}/import</code> keeps
+current (<code>queued</code>, <code>running</code>, <code>done</code> with branch and tag counts, or
+<code>failed</code> with the reason). The repository's front page shows the progress
+and, for administrators, the result.</p>
+<ul>
+<li>Only <code>https://</code> URLs work, unless <code>[import] allow_http = true</code>. <code>file://</code>,
+<code>ssh://</code>, <code>git://</code>, and other transports are refused, and so is anything
+that looks like a Git option.</li>
+<li>The server name is resolved when the import is requested and again when
+it runs; every address must be public, and Git connects only to the
+checked address. Loopback, private, shared, link-local (including cloud
+metadata), unique-local, multicast, and reserved addresses, IPv6 forms
+that embed such an IPv4 address, and the instance itself are refused.
+To import from an internal server, list its network in
+<code>[import] allow_networks</code> (e.g. <code>["10.20.0.0/16"]</code>).</li>
+<li>Redirects aren't followed (use the final URL), bundle URIs are ignored,
+every object is checked, and submodules aren't fetched.</li>
+<li>A username and password (or access token) for private sources are used
+once: they travel encrypted, Git reads them from a file only the server
+can read for the duration of the fetch, and they are deleted afterwards.
+They never appear in a process's arguments or in the stored URL.</li>
+<li>An import may take <code>limits.import_timeout</code> (1 hour by default) and fetch
+up to <code>limits.push_max_bytes</code>. If it fails, delete the repository and
+try again.</li>
+<li>Only Git data is imported, not issues, merge requests, wikis, or
+releases. <code>[import] enabled = false</code> turns imports off.</li>
+</ul>
+<h2 id="webhooks">Webhooks<a href="#webhooks" aria-label="Link to heading 'Webhooks'" class="anchor"></a></h2>
+<p>Repository administrators and organization owners add webhooks (see the
+<a href="../user/webhooks.html">user guide</a>). Deliveries leave the server from the
+job workers; plan for them in outbound firewall rules.</p>
+<ul>
+<li>Only <code>https://</code> URLs work, unless <code>[webhooks] allow_http = true</code>.</li>
+<li>The address policy is the one imports use: the receiver's name is
+resolved at every attempt, every address must be public, and Slath
+connects only to the checked address (DNS rebinding can't redirect a
+delivery). To deliver to internal receivers, list their networks in
+<code>[webhooks] allow_networks</code> (e.g. <code>["10.20.0.0/16"]</code>).</li>
+<li>Redirects aren't followed. An attempt may take 10 seconds; failures are
+retried, 8 attempts in all over about two hours, and 50 failed attempts in a
+row switch a webhook off (audit event <code>webhook.disabled</code>, and an email
+to the person it acts for).</li>
+<li>At most <code>limits.webhooks_per_owner</code> (20) webhooks per repository or
+organization. Deliveries are kept 30 days. Creating, changing, and
+deleting webhooks is audited (<code>webhook.create</code>, <code>webhook.update</code>,
+<code>webhook.delete</code>).</li>
+<li>Webhook secrets are encrypted with the master key; rotating it
+re-encrypts them (see <a href="secrets.html">secrets</a>).</li>
+</ul>
+<h2 id="visibility">Visibility<a href="#visibility" aria-label="Link to heading 'Visibility'" class="anchor"></a></h2>
+<p>Every repository is <strong>private</strong> (only people with access), <strong>internal</strong>
+(every signed-in user of the instance can read it, open issues, and
+clone it; signed-out visitors and anonymous Git clients get "not
+found"), or <strong>public</strong> (everyone). Owners choose it when creating or
+importing a repository and change it under <strong>Settings → General</strong>, which
+asks for the password again; the API takes <code>"visibility": "internal"</code>.
+Internal works like public for everyone who is signed in: it gives no
+role, so only collaborators, teams, and organization members can push or
+change settings. Raw files and attachments of internal repositories are
+never cached by shared caches.</p>
+<h2 id="forks">Forks<a href="#forks" aria-label="Link to heading 'Forks'" class="anchor"></a></h2>
+<p>Anyone who can read a repository can fork it into their own namespace or
+an organization where they can create repositories, with a token
+(<code>repo:write</code>): <code>POST /api/v1/repos/{ns}/{repo}/forks</code> with <code>namespace</code>,
+and optionally <code>name</code> (default: the parent's), <code>visibility</code> (default: the
+parent's), and <code>default_branch_only</code>. The fork exists right away, empty;
+its branches and tags are copied in the background, and pushes to it are
+refused until <code>GET /api/v1/repos/{ns}/{repo}/fork</code> says <code>done</code>.</p>
+<ul>
+<li>Only branches and tags are copied, never merge request or internal
+refs. The parent's packs are hardlinked when both are on the same
+filesystem (so a fork takes almost no space or time) and copied
+otherwise; the rest is fetched. The fork shares nothing with its parent
+afterwards: garbage collection or deletion of the parent doesn't affect
+it.</li>
+<li>Objects only the parent's deleted branches reached aren't copied when
+they are loose or in a cruft pack, which is where they are once the
+parent's maintenance ran. Objects of a recent large push whose branch
+was deleted before that can come along until the fork's own maintenance
+removes them; anyone who can read the fork can fetch them by ID.</li>
+<li>A fork can never be more visible than its parent was when it was
+forked: a fork of a private repository stays private, even after the
+parent is deleted.</li>
+<li>When the person who made a fork of a non-public repository loses read
+access to it (a removed collaborator, team, or organization membership,
+or a visibility change), the fork is locked: only site administrators
+see it, under <strong>Administration → Repositories</strong> as "Locked". It's
+unlocked when access returns, and deleted after
+<code>maintenance.deleted_repo_days</code> otherwise. Deleting the parent leaves
+its forks alone.</li>
+</ul>
+<h2 id="branch-protection">Branch protection<a href="#branch-protection" aria-label="Link to heading 'Branch protection'" class="anchor"></a></h2>
+<p>Repository administrators protect branches under <strong>Settings → Branch
+protection</strong> (or <code>POST /api/v1/repos/{ns}/{repo}/protections</code>). A rule
+names a branch or a pattern: <code>*</code> matches any characters except <code>/</code>, and
+<code>?</code> one such character (<code>main</code>, <code>release/*</code>). When several rules match a
+branch, the strictest setting of each applies.</p>
+<ul>
+<li><strong>Block force pushes</strong> refuses updates that don't contain the previous
+commit. The check runs on the pushed objects before Git accepts them.</li>
+<li><strong>Block deletion</strong> refuses deleting the branch.</li>
+<li><strong>Who may push directly:</strong> the write role and up (default), maintain,
+admins, or nobody (changes land only through merge requests).</li>
+<li><strong>Require merge requests</strong> refuses direct pushes. Repository admins may
+still push; Git tells them so, and each such push is recorded in the
+audit log (<code>protection.bypass</code>).</li>
+<li><strong>Bots that may merge and push:</strong> bot names, separated by commas. Bots
+not listed can't push to the branch or merge into it (by hand, when
+ready, or by updating a merge request's branch), whatever their role.</li>
+</ul>
+<p>For merging merge requests into a protected branch:</p>
+<ul>
+<li>
+<p><strong>Approvals needed</strong> (default 1): approvals from people with write
+access, not counting the author, or bots unless <strong>Count approvals by
+bots</strong> is on. Bots the author owns never count.</p>
+</li>
+<li>
+<p><strong>Dismiss approvals when the changes change</strong> (on by default): a new
+revision makes earlier approvals stale, unless it's a rebase that keeps
+every change's patch the same.</p>
+</li>
+<li>
+<p><strong>Dismiss approvals on every new revision</strong> (off by default): stricter,
+even a rebase that keeps every patch needs new approvals, since the code
+it builds on changed.</p>
+</li>
+<li>
+<p><strong>Require resolved threads</strong> and <strong>Require the branch to be up to date
+with the target</strong>.</p>
+</li>
+<li>
+<p><strong>Required status checks:</strong> status contexts that must report <code>success</code>
+on the commit that lands, one per line (<code>ci/build</code>). Add <code>by</code> and names
+to count only those reporters' statuses (<code>ci/build by ci-bot</code>).
+Statuses from the merge request's author and from bots the author owns
+never count, whatever the rule says.</p>
+</li>
+<li>
+<p><strong>Accept statuses on the merge request's head for rebase and merge
+commits</strong> (on by default). Off, only a fast-forward merge can use the
+head's statuses.</p>
+</li>
+</ul>
+<p>With several matching rules, the highest number of approvals applies, any
+rule can turn on a requirement, bots count only if every rule allows it
+and may merge only if every rule lists them,
+and the required checks of all rules apply (with reporter lists, only
+reporters on every list count).</p>
+<h3 id="sensitive-paths">Sensitive paths<a href="#sensitive-paths" aria-label="Link to heading 'Sensitive paths'" class="anchor"></a></h3>
+<p>Bots can't change sensitive paths on any branch, and on protected branches
+a merge request that changes one needs a maintainer's approval (see
+<a href="../user/bots.html#sensitive-paths">sensitive paths</a>). Slath has a built-in
+list: CI workflows, <code>.slath/</code>, code-owner files, and agent instruction
+files such as <code>AGENTS.md</code>. Repository administrators add their own under
+<strong>Settings → Branch protection → Sensitive paths</strong>.</p>
+<p>To add paths for every repository of the instance, for example another
+CI system's files or the instruction files your teams' agents read, list
+them in the configuration:</p>
+<pre tabindex="0"><code class="language-toml">[sensitive_paths]
+extra = [".buildkite/**", ".gitlab-ci.yml", "**/CONVENTIONS.md"]
+</code></pre>
+<p>The globs use the same syntax as a repository's own: from the repository
+root, <code>**</code> any path (<code>**/</code> whole folders), <code>*</code> within a folder name, <code>?</code>
+one character, at most 100 globs of at most 255 bytes, matched regardless
+of upper and lower case. An invalid glob stops <code>slath serve</code> from starting
+and names it. The paths apply after a restart, to bot pushes and merge
+requirements alike. Neither the configuration nor repositories can remove
+a built-in path; repository settings and
+<code>GET /api/v1/repos/{ns}/{repo}/sensitive-paths</code> (<code>instance</code>) show the
+instance's paths next to the built-in ones.</p>
+<p>A refused push changes nothing: no ref moves and nothing is recorded. Tags
+aren't affected by branch rules (moving or deleting a tag needs the
+maintain role). Changes to rules are recorded in the audit log.</p>
+<h2 id="deploy-keys">Deploy keys<a href="#deploy-keys" aria-label="Link to heading 'Deploy keys'" class="anchor"></a></h2>
+<p>A deploy key is an SSH key of one repository, for a machine rather than a
+person: a build server that clones, or a deployment that pushes. Admins of
+the repository add them under <strong>Settings → Deploy keys</strong> (in sudo mode) or
+through the API with a <code>repo:write</code> token:</p>
+<pre tabindex="0"><code class="language-sh">curl -H "Authorization: Bearer $TOKEN" -d '{"key": "ssh-ed25519 AAAA… deploy@ci", "can_push": false}' \
+  https://slath.example/api/v1/repos/alice/demo/keys
+</code></pre>
+<ul>
+<li>A key is <strong>read-only</strong> unless <code>can_push</code> is set. With it, the key pushes
+like a writer: branch protection applies, it can add tags but not move or
+delete them, and it never changes settings.</li>
+<li>A key reaches <strong>its repository only</strong>. Every other repository, public
+ones and forks of this one included, answers "repository not found".</li>
+<li>A key belongs to exactly one person or repository: one already in use
+anywhere is refused without saying where. Generate a key per repository.</li>
+<li><code>GET …/keys</code> lists them with their last use, and <code>DELETE …/keys/{id}</code>
+removes one; the next connection with it fails. Adding and removing are
+in the audit log, and actions taken with a key name it there.</li>
+</ul>
+<h2 id="issues">Issues<a href="#issues" aria-label="Link to heading 'Issues'" class="anchor"></a></h2>
+<p>Every repository has issues unless they are turned off. Issues and merge
+requests share one sequence of numbers per repository, so <code>#12</code> is never
+ambiguous.</p>
+<ul>
+<li>Anyone who can read the repository and is signed in can open issues and
+comment. Authors edit and close their own issues and edit their own
+comments; the write role edits and closes any issue; the maintain role
+also hides and deletes others' comments (recorded in the audit log).</li>
+<li>Markdown in issues and comments links references: <code>#12</code> and
+<code>owner/repo#12</code> (issues), <code>@name</code> (people), <code>@org/team</code> (teams),
+<code>~bug</code> or <code>~"needs review"</code> (labels of the repository), <code>%v1.0</code> or
+<code>%"Q3 cleanup"</code> (milestones), and commit IDs (7 to 40 hexadecimal
+characters, or <code>owner/repo@abc1234</code>). A reference shows the target's
+title and state only to people who can read it; for everyone else it
+stays plain text and reveals nothing. Team references link only for
+members of the organization.</li>
+<li>The editor suggests references while typing. The same suggestions are
+available with a token at
+<code>GET /api/v1/repos/{owner}/{repo}/references?kind=user|team|item|label|milestone&amp;q=</code>:
+at most 10, only from repositories the caller can read, never with email
+addresses, and 60 requests a minute per user. People are ranked by taking
+part in the issue (<code>item=&lt;number&gt;</code>), then by access to the repository.
+With open registration, someone without access of their own to the
+repository is only offered people who already took part in it. A reference to another
+issue adds "mentioned this in" to that issue, shown only to people who
+can read where the mention was made.</li>
+<li>Titles have up to 256 characters; descriptions and comments are limited
+by <code>limits.text_max_bytes</code> (256 KiB by default).</li>
+</ul>
+<h3 id="search">Search<a href="#search" aria-label="Link to heading 'Search'" class="anchor"></a></h3>
+<ul>
+<li><code>/-/search</code> (the Search link in the header) finds issues by words in
+their title, description, or comments, and repositories by part of their
+name or description. Issues accept <code>"exact phrases"</code>, <code>-excluded</code> words,
+and <code>or</code>. Each repository's issue list links to a search limited to it.</li>
+<li>Results contain only what the searcher can read: the database filters
+before ranking and paging, so private matches are never counted and
+pages are always full. Deleted and hidden comments don't match.</li>
+<li>The API offers the same with <code>GET /api/v1/search/issues?q=&amp;repo=</code> and
+<code>GET /api/v1/search/repos?q=</code>. A token without <code>repo:read</code> searches like
+an anonymous visitor.</li>
+<li>Search uses PostgreSQL's full-text search with the language-neutral
+<code>simple</code> configuration (words are matched exactly, without stemming) and
+the <code>pg_trgm</code> extension, which the upgrade enables. It is part of
+PostgreSQL's standard contrib modules.</li>
+</ul>
+<h3 id="notifications">Notifications<a href="#notifications" aria-label="Link to heading 'Notifications'" class="anchor"></a></h3>
+<ul>
+<li>People are notified about issues they opened, commented on, or are
+assigned to, when they are mentioned (<code>@name</code>, or <code>@org/team</code> for the
+team's members), and about every issue in repositories they watch.
+Creating a repository watches it. Nobody is notified about their own
+actions.</li>
+<li>The Watch button at the top of every repository page watches it; Unwatch goes
+back to being notified only about issues you take part in. The
+Notifications box in an issue's sidebar shows whether you are subscribed
+and subscribes to or unsubscribes from that issue; unsubscribing silences
+it even if you opened it or watch the repository.</li>
+<li>Notifications collect in the inbox (<code>/-/notifications</code>, one entry per
+issue, marked unread on new activity) and, if the instance sends email
+and the address is confirmed, as one email per event, threaded per issue
+with <code>List-Id</code> and a one-click <code>List-Unsubscribe</code> link. People turn email
+off under Settings → Notifications.</li>
+<li>Read access is checked when a notification is created, when its email
+is sent, and when the inbox is shown: someone who loses access hears
+nothing more and no longer sees earlier entries. With a token, the API
+(<code>GET /api/v1/notifications</code>, <code>PATCH /api/v1/notifications/{id}</code>) needs
+<code>user:read</code> (<code>user:write</code> to change) and shows entries of private
+repositories only with <code>repo:read</code>.</li>
+</ul>
+<h3 id="attachments">Attachments<a href="#attachments" aria-label="Link to heading 'Attachments'" class="anchor"></a></h3>
+<ul>
+<li>People who can comment can attach files, up to <code>limits.attachment_max_bytes</code>
+(25 MiB by default). The API takes them as <code>multipart/form-data</code> (a <code>file</code>
+part, token scope <code>issues:write</code>) at
+<code>POST /api/v1/repos/{owner}/{repo}/attachments</code> and answers with the URL and
+ready-made Markdown.</li>
+<li>Attachments are served from <code>/{owner}/{repo}/attachments/{id}/{name}</code> to
+people who can read the repository, and from nowhere else: an attachment of
+a private repository is "not found" for everyone else, and an ID only works
+with its own repository.</li>
+<li>PNG, JPEG, GIF, and WebP images (recognized by their content, not their
+name) display inline. Everything else, including SVG, HTML, and PDF, is a
+download, served in a sandbox with <code>nosniff</code>.</li>
+<li>Files are stored once per content under <code>&lt;data_dir&gt;/blobs/</code>. A file nothing
+uses any more (its repository was deleted, or an avatar was replaced) is
+deleted after <code>limits.blob_grace_period</code> (24 hours by default). Files left
+by interrupted uploads are deleted after the same time.</li>
+</ul>
+<h3 id="avatars">Avatars<a href="#avatars" aria-label="Link to heading 'Avatars'" class="anchor"></a></h3>
+<p>Users (Settings → Profile) and organization owners (organization settings)
+can upload a PNG, JPEG, or WebP avatar of up to <code>limits.avatar_max_bytes</code>
+(5 MiB by default). It is cropped to a square, scaled to 256 × 256 pixels,
+and stored as a new PNG, so EXIF data such as GPS coordinates and camera
+details is not kept. Without an upload, a pattern generated from the name is
+shown. Avatars never come from external services.</p>
+<h3 id="writing-markdown">Writing Markdown<a href="#writing-markdown" aria-label="Link to heading 'Writing Markdown'" class="anchor"></a></h3>
+<p>Issue descriptions and comments use the Markdown editor:</p>
+<ul>
+<li><strong>Rich text</strong> shows formatting while you type; <strong>Markdown</strong> shows the
+source with highlighting. The button next to the toolbar switches between
+them, and the choice is remembered. Text the rich editor would rewrite
+(for example setext headings or reference-style links) opens as source.
+Text you don't change is saved exactly as it was.</li>
+<li>The toolbar and its shortcuts (listed under <strong>Shortcuts</strong>) format text;
+Tab always leaves the editor. Typing <code>@</code>, <code>#</code>, <code>~</code>, <code>%</code>, or <code>owner/repo#</code>
+offers people, issues, labels, and milestones.</li>
+<li><strong>Preview</strong> shows the text as it will be published.</li>
+<li>Ctrl+Enter sends the form. In a comment, Ctrl+Shift+Enter comments and
+closes the issue (or reopens a closed one); without text it only changes
+the state.</li>
+<li>Files can be attached with the paperclip button, by pasting, or by
+dropping them; links to issues and commits on this instance become short
+references when pasted.</li>
+<li>Unsent text is kept in the browser until the form is sent; signing out
+removes it.</li>
+<li>Without JavaScript, the field is a plain text box.</li>
+</ul>
+<h3 id="labels-milestones-and-assignees">Labels, milestones, and assignees<a href="#labels-milestones-and-assignees" aria-label="Link to heading 'Labels, milestones, and assignees'" class="anchor"></a></h3>
+<ul>
+<li>A new repository starts with the labels bug, enhancement, documentation,
+question, good first issue, help wanted, duplicate, and wontfix, which
+can be changed or deleted like any other.</li>
+<li>The maintain role creates, edits, and deletes labels (name up to 50
+characters, a color, an optional description) and milestones (title up
+to 100 characters, optional due date and description; open or closed)
+on the repository's Labels and Milestones pages. Label names and
+milestone titles are unique per repository regardless of case.
+Deleting a label removes it from all issues; deleting a milestone leaves
+its issues without one.</li>
+<li>The write role applies labels, sets the milestone, and assigns up to 10
+people from the issue's sidebar, which suggests names while you type. Only people who can read the repository
+can be assigned. Each change appears on the issue's timeline.</li>
+<li>The issue list filters by labels, assignee, author, and milestone, and
+sorts by creation or last update. Filters combine: an issue must match
+all of them, including every listed label. The API takes the same
+filters (<code>labels</code>, <code>assignee</code>, <code>author</code>, <code>milestone</code>, <code>sort</code>) and sets
+<code>labels</code>, <code>assignees</code>, and <code>milestone</code> with <code>PATCH</code> on an issue.</li>
+</ul>
+
+<nav class="docs-pager" aria-label="Previous and next page"><a rel="prev" href="../admin/push-protection.html">Previous: Push protection</a><a rel="next" href="../admin/secrets.html">Next: Secrets and the master key</a></nav>
+</main>
+<nav class="docs-nav" id="docs-nav" aria-label="Documentation">
+<ul>
+<li><span class="docs-nav-section">Using Slath</span>
+<ul>
+<li><a href="../user/settings.html">Appearance and time zone</a></li>
+<li><a href="../user/bots.html">Bots</a></li>
+<li><a href="../user/forks.html">Forks</a></li>
+<li><a href="../user/merge-requests.html">Merge requests</a></li>
+<li><a href="../user/webhooks.html">Webhooks</a></li>
+<li><a href="../user/agents.html">Working with AI agents</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Administration</span>
+<ul>
+<li><a href="../admin/accounts.html">Accounts and sign-in</a></li>
+<li><a href="../admin/backup.html">Backup and restore</a></li>
+<li><a href="../admin/doctor.html">Diagnosing an installation</a></li>
+<li><a href="../admin/email.html">Email</a></li>
+<li><a href="../admin/install.html">Installing Slath</a></li>
+<li><a href="../admin/appearance.html">Instance logo</a></li>
+<li><a href="../admin/push-protection.html">Push protection</a></li>
+<li><a href="../admin/repositories.html" aria-current="page">Repositories</a></li>
+<li><a href="../admin/secrets.html">Secrets and the master key</a></li>
+<li><a href="../admin/bootstrap.html">Setting up an instance from a file</a></li>
+<li><a href="../admin/upgrading.html">Upgrading Slath</a></li>
+<li><a href="../admin/verify.html">Verifying a release</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Command line</span>
+<ul>
+<li><a href="../cli/index.html">JSON output of slath commands</a></li>
+</ul></li>
+<li><span class="docs-nav-section">Contributing</span>
+<ul>
+<li><a href="../dev/setup.html">Developer setup</a></li>
+<li><a href="../dev/upgrades.html">Keeping upgrades safe</a></li>
+<li><a href="../dev/releasing.html">Releasing</a></li>
+</ul></li>
+<li><span class="docs-nav-section">API reference</span>
+<ul>
+<li><a href="../api/index.html">API reference</a></li>
+<li><a href="../api/bots.html">Bots</a></li>
+<li><a href="../api/issues.html">Issues</a></li>
+<li><a href="../api/merge-requests.html">Merge requests</a></li>
+<li><a href="../api/meta.html">Meta</a></li>
+<li><a href="../api/orgs.html">Orgs</a></li>
+<li><a href="../api/repos.html">Repos</a></li>
+<li><a href="../api/statuses.html">Statuses</a></li>
+<li><a href="../api/user.html">User</a></li>
+<li><a href="../api/webhooks.html">Webhooks</a></li>
+</ul></li>
+</ul>
+</nav>
+</div>
+</body>
+</html>
